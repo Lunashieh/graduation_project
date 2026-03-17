@@ -1,0 +1,22 @@
+{
+  "protocol_family": "OtwayRees",
+  "variant": "bug_02",
+  "generated_at": "2026-03-17T05:11:20",
+  "proverif": {
+    "command": "proverif -in pitype model.pv",
+    "all_ok": false,
+    "queries": [
+      {
+        "text": "not attacker(secretA[])",
+        "result": false
+      }
+    ],
+    "violated": [
+      "not attacker(secretA[])"
+    ]
+  },
+  "artifacts": {
+    "model": "model.pv",
+    "log": "proverif.log"
+  }
+}

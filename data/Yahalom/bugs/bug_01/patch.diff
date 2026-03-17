@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BUGS\BUG_01\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BASELINE\model.pv
+   98:          in(c, (cert1: bitstring, cert2: bitstring));
+   99:          let (b: host, k: key, =Na, nb: nonce) = decrypt(cert1, kas) in
+  100:          event beginBparam(xA, b);
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BUGS\BUG_01\MODEL.PV
+   98:          in(c, (cert1: bitstring, cert2: bitstring));
+   99:          let (b: host, k: key, na2: nonce, nb: nonce) = decrypt(cert1, kas) in
+  100:          event beginBparam(xA, b);
+*****
+

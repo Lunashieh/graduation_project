@@ -1,0 +1,43 @@
+{
+  "protocol_family": "Skeme",
+  "variant": "bug_03",
+  "generated_at": "2026-03-17T00:47:34",
+  "proverif": {
+    "command": "proverif -in pitype model.pv",
+    "all_ok": false,
+    "queries": [
+      {
+        "text": "not attacker(secretA[])",
+        "result": false
+      },
+      {
+        "text": "not attacker(secretB[])",
+        "result": false
+      },
+      {
+        "text": "inj-event(endAparam(t)) ==> inj-event(beginAparam(t))",
+        "result": true
+      },
+      {
+        "text": "inj-event(endAkey(t,z)) ==> inj-event(beginAkey(t,z))",
+        "result": true
+      },
+      {
+        "text": "inj-event(endBparam(t)) ==> inj-event(beginBparam(t))",
+        "result": true
+      },
+      {
+        "text": "inj-event(endBkey(t,z)) ==> inj-event(beginBkey(t,z))",
+        "result": true
+      }
+    ],
+    "violated": [
+      "not attacker(secretA[])",
+      "not attacker(secretB[])"
+    ]
+  },
+  "artifacts": {
+    "model": "model.pv",
+    "log": "proverif.log"
+  }
+}

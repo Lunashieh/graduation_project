@@ -1,0 +1,372 @@
+Process 0 (that is, the initial process):
+{1}new skA: skey;
+{2}new skB: skey;
+{3}new skS: skey;
+{4}let pkA: pkey = pk(skA) in
+{5}let pkB: pkey = pk(skB) in
+{6}let pkS: pkey = pk(skS) in
+{7}out(c, pkA);
+{8}out(c, pkB);
+{9}out(c, pkS);
+{10}insert keys(A,pkA);
+{11}insert keys(B,pkB);
+(
+    {12}!
+    {13}let skA_1: skey = skA in
+    {14}let skB_1: skey = skB in
+    {15}in(c, (xA: host,xB0: host));
+    {16}if ((xA = A) || (xA = B)) then
+    {17}let skxA: skey = (if (xA = A) then skA_1 else skB_1) in
+    {18}event beginBparam(xA,xB0);
+    {19}out(c, xA);
+    {20}in(c, n: nonce);
+    {21}event beginBfull(xA,xB0,n);
+    {22}out(c, sign((xA,xB0,n),skxA))
+) | (
+    {23}!
+    {24}in(c, xB: host);
+    {25}if ((xB = A) || (xB = B)) then
+    {26}in(c, xA0: host);
+    {27}new n_1: nonce;
+    {28}out(c, n_1);
+    {29}in(c, m: bitstring);
+    {30}out(c, xA0);
+    {31}in(c, (=xA0,m4: bitstring));
+    {32}let (=xA0,pkA2: pkey) = checksign(m4,pkS) in
+    {33}let (=xA0,=xB,=n_1) = checksign(m,pkA2) in
+    {34}if ((xA0 = A) || (xA0 = B)) then
+    {35}event endBparam(xA0,xB);
+    {36}event endBfull(xA0,xB,n_1)
+) | (
+    {37}!
+    {38}let skS_1: skey = skS in
+    {39}in(c, xA_1: host);
+    {41}get keys(=xA_1,pkA_1: pkey) in
+    {40}out(c, (xA_1,sign((xA_1,pkA_1),skS_1)))
+) | (
+    {42}!
+    {43}in(c, (h: host,k: pkey));
+    {44}if ((h ≠ A) || (h ≠ B)) then
+    {45}insert keys(h,k)
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new skA: skey;
+{2}new skB: skey;
+{3}new skS: skey;
+{4}let pkA: pkey = pk(skA) in
+{7}out(c, pkA);
+{5}let pkB: pkey = pk(skB) in
+{8}out(c, pkB);
+{6}let pkS: pkey = pk(skS) in
+{9}out(c, pkS);
+{10}insert keys(A,pkA);
+{11}insert keys(B,pkB);
+(
+    {12}!
+    {15}in(c, (xA: host,xB0: host));
+    {16}if ((xA = A) || (xA = B)) then
+    {18}event beginBparam(xA,xB0);
+    {19}out(c, xA);
+    {20}in(c, n: nonce);
+    {21}event beginBfull(xA,xB0,n);
+    {14}let skB_1: skey = skB in
+    {13}let skA_1: skey = skA in
+    {17}let skxA: skey = (if (xA = A) then skA_1 else skB_1) in
+    {22}out(c, sign((xA,xB0,n),skxA))
+) | (
+    {23}!
+    {24}in(c, xB: host);
+    {25}if ((xB = A) || (xB = B)) then
+    {26}in(c, xA0: host);
+    {27}new n_1: nonce;
+    {28}out(c, n_1);
+    {29}in(c, m: bitstring);
+    {30}out(c, xA0);
+    {31}in(c, (=xA0,m4: bitstring));
+    {32}let (=xA0,pkA2: pkey) = checksign(m4,pkS) in
+    {33}let (=xA0,=xB,=n_1) = checksign(m,pkA2) in
+    {34}if ((xA0 = A) || (xA0 = B)) then
+    {35}event endBparam(xA0,xB);
+    {36}event endBfull(xA0,xB,n_1)
+) | (
+    {37}!
+    {39}in(c, xA_1: host);
+    {41}get keys(=xA_1,pkA_1: pkey) in
+    {38}let skS_1: skey = skS in
+    {40}out(c, (xA_1,sign((xA_1,pkA_1),skS_1)))
+) | (
+    {42}!
+    {43}in(c, (h: host,k: pkey));
+    {44}if ((h ≠ A) || (h ≠ B)) then
+    {45}insert keys(h,k)
+)
+
+-- Query inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+ok, secrecy assumption verified: fact unreachable attacker(skA[])
+ok, secrecy assumption verified: fact unreachable attacker(skB[])
+ok, secrecy assumption verified: fact unreachable attacker(skS[])
+Starting query inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y))
+goal reachable: attacker(k_1) -> inj-event(endBparam(B[],B[]),@occ35_1)
+Abbreviations:
+n_2 = n_1[xA0 = B[],xB = B[],!1 = @sid]
+@occ35_1 = @occ35[m4 = sign((B[],pk(k_1)),skS[]),m = sign((B[],B[],n_2),k_1),xA0 = B[],xB = B[],!1 = @sid]
+
+Derivation:
+Abbreviations:
+n_2 = n_1[xA0 = B[],xB = B[],!1 = @sid]
+@occ35_1 = @occ35[m4 = sign((B[],pk(k_1)),skS[]),m = sign((B[],B[],n_2),k_1),xA0 = B[],xB = B[],!1 = @sid]
+
+1. The attacker initially knows B[].
+attacker(B[]).
+
+2. We assume as hypothesis that
+attacker(k_1).
+
+3. The message B[] that the attacker may have by 1 may be received at input {24}.
+The message B[] that the attacker may have by 1 may be received at input {26}.
+So the message n_2 may be sent to the attacker at output {28}.
+attacker(n_2).
+
+4. By 1, the attacker may know B[].
+By 1, the attacker may know B[].
+By 3, the attacker may know n_2.
+Using the function 3-tuple the attacker may obtain (B[],B[],n_2).
+attacker((B[],B[],n_2)).
+
+5. By 4, the attacker may know (B[],B[],n_2).
+By 2, the attacker may know k_1.
+Using the function sign the attacker may obtain sign((B[],B[],n_2),k_1).
+attacker(sign((B[],B[],n_2),k_1)).
+
+6. By 2, the attacker may know k_1.
+Using the function pk the attacker may obtain pk(k_1).
+attacker(pk(k_1)).
+
+7. By 1, the attacker may know B[].
+By 6, the attacker may know pk(k_1).
+Using the function 2-tuple the attacker may obtain (B[],pk(k_1)).
+attacker((B[],pk(k_1))).
+
+8. The message (B[],pk(k_1)) that the attacker may have by 7 may be received at input {43}.
+We have B[] ≠ A[].
+So the entry keys(B[],pk(k_1)) may be inserted in a table at insert {45}.
+table(keys(B[],pk(k_1))).
+
+9. The message B[] that the attacker may have by 1 may be received at input {39}.
+The entry keys(B[],pk(k_1)) that may be in a table by 8 may be read at get {41}.
+So the message (B[],sign((B[],pk(k_1)),skS[])) may be sent to the attacker at output {40}.
+attacker((B[],sign((B[],pk(k_1)),skS[]))).
+
+10. By 9, the attacker may know (B[],sign((B[],pk(k_1)),skS[])).
+Using the function 2-proj-2-tuple the attacker may obtain sign((B[],pk(k_1)),skS[]).
+attacker(sign((B[],pk(k_1)),skS[])).
+
+11. By 1, the attacker may know B[].
+By 10, the attacker may know sign((B[],pk(k_1)),skS[]).
+Using the function 2-tuple the attacker may obtain (B[],sign((B[],pk(k_1)),skS[])).
+attacker((B[],sign((B[],pk(k_1)),skS[]))).
+
+12. The message B[] that the attacker may have by 1 may be received at input {24}.
+The message B[] that the attacker may have by 1 may be received at input {26}.
+The message sign((B[],B[],n_2),k_1) that the attacker may have by 5 may be received at input {29}.
+The message (B[],sign((B[],pk(k_1)),skS[])) that the attacker may have by 11 may be received at input {31}.
+So event endBparam(B[],B[]) may be executed at {35} in session @sid.
+inj-event(endBparam(B[],B[]),@occ35_1).
+
+13. By 12, inj-event(endBparam(B[],B[]),@occ35_1).
+The goal is reached, represented in the following fact:
+inj-event(endBparam(B[],B[]),@occ35_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new skA: skey creating skA_2 at {1}
+
+new skB: skey creating skB_2 at {2}
+
+new skS: skey creating skS_2 at {3}
+
+out(c, ~M) with ~M = pk(skA_2) at {7}
+
+out(c, ~M_1) with ~M_1 = pk(skB_2) at {8}
+
+out(c, ~M_2) with ~M_2 = pk(skS_2) at {9}
+
+insert keys(A,pk(skA_2)) at {10}
+
+insert keys(B,pk(skB_2)) at {11}
+
+in(c, B) at {24} in copy a
+
+in(c, B) at {26} in copy a
+
+new n_1: nonce creating n_3 at {27} in copy a
+
+out(c, ~M_3) with ~M_3 = n_3 at {28} in copy a
+
+in(c, sign((B,B,~M_3),a_1)) with sign((B,B,~M_3),a_1) = sign((B,B,n_3),a_1) at {29} in copy a
+
+out(c, ~M_4) with ~M_4 = B at {30} in copy a
+
+in(c, B) at {39} in copy a_2
+
+in(c, (B,pk(a_1))) at {43} in copy a_3
+
+insert keys(B,pk(a_1)) at {45} in copy a_3
+
+get keys(B,pk(a_1)) at {41} in copy a_2
+
+out(c, (~M_5,~M_6)) with ~M_5 = B, ~M_6 = sign((B,pk(a_1)),skS_2) at {40} in copy a_2
+
+in(c, (B,~M_6)) with ~M_6 = sign((B,pk(a_1)),skS_2) at {31} in copy a
+
+event endBparam(B,B) at {35} in copy a (goal)
+
+The event endBparam(B,B) is executed at {35} in copy a.
+A trace has been found.
+RESULT inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y)) is false.
+RESULT (even event(endBparam(x,y)) ==> event(beginBparam(x,y)) is false.)
+-- Query inj-event(endBfull(x,y,z)) ==> inj-event(beginBfull(x,y,z)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+ok, secrecy assumption verified: fact unreachable attacker(skA[])
+ok, secrecy assumption verified: fact unreachable attacker(skB[])
+ok, secrecy assumption verified: fact unreachable attacker(skS[])
+Starting query inj-event(endBfull(x,y,z)) ==> inj-event(beginBfull(x,y,z))
+goal reachable: attacker(k_1) -> inj-event(endBfull(B[],B[],n_2),@occ36_1)
+Abbreviations:
+n_2 = n_1[xA0 = B[],xB = B[],!1 = @sid]
+@occ36_1 = @occ36[m4 = sign((B[],pk(k_1)),skS[]),m = sign((B[],B[],n_2),k_1),xA0 = B[],xB = B[],!1 = @sid]
+
+Derivation:
+Abbreviations:
+n_2 = n_1[xA0 = B[],xB = B[],!1 = @sid]
+@occ36_1 = @occ36[m4 = sign((B[],pk(k_1)),skS[]),m = sign((B[],B[],n_2),k_1),xA0 = B[],xB = B[],!1 = @sid]
+
+1. The attacker initially knows B[].
+attacker(B[]).
+
+2. We assume as hypothesis that
+attacker(k_1).
+
+3. The message B[] that the attacker may have by 1 may be received at input {24}.
+The message B[] that the attacker may have by 1 may be received at input {26}.
+So the message n_2 may be sent to the attacker at output {28}.
+attacker(n_2).
+
+4. By 1, the attacker may know B[].
+By 1, the attacker may know B[].
+By 3, the attacker may know n_2.
+Using the function 3-tuple the attacker may obtain (B[],B[],n_2).
+attacker((B[],B[],n_2)).
+
+5. By 4, the attacker may know (B[],B[],n_2).
+By 2, the attacker may know k_1.
+Using the function sign the attacker may obtain sign((B[],B[],n_2),k_1).
+attacker(sign((B[],B[],n_2),k_1)).
+
+6. By 2, the attacker may know k_1.
+Using the function pk the attacker may obtain pk(k_1).
+attacker(pk(k_1)).
+
+7. By 1, the attacker may know B[].
+By 6, the attacker may know pk(k_1).
+Using the function 2-tuple the attacker may obtain (B[],pk(k_1)).
+attacker((B[],pk(k_1))).
+
+8. The message (B[],pk(k_1)) that the attacker may have by 7 may be received at input {43}.
+We have B[] ≠ A[].
+So the entry keys(B[],pk(k_1)) may be inserted in a table at insert {45}.
+table(keys(B[],pk(k_1))).
+
+9. The message B[] that the attacker may have by 1 may be received at input {39}.
+The entry keys(B[],pk(k_1)) that may be in a table by 8 may be read at get {41}.
+So the message (B[],sign((B[],pk(k_1)),skS[])) may be sent to the attacker at output {40}.
+attacker((B[],sign((B[],pk(k_1)),skS[]))).
+
+10. By 9, the attacker may know (B[],sign((B[],pk(k_1)),skS[])).
+Using the function 2-proj-2-tuple the attacker may obtain sign((B[],pk(k_1)),skS[]).
+attacker(sign((B[],pk(k_1)),skS[])).
+
+11. By 1, the attacker may know B[].
+By 10, the attacker may know sign((B[],pk(k_1)),skS[]).
+Using the function 2-tuple the attacker may obtain (B[],sign((B[],pk(k_1)),skS[])).
+attacker((B[],sign((B[],pk(k_1)),skS[]))).
+
+12. The message B[] that the attacker may have by 1 may be received at input {24}.
+The message B[] that the attacker may have by 1 may be received at input {26}.
+The message sign((B[],B[],n_2),k_1) that the attacker may have by 5 may be received at input {29}.
+The message (B[],sign((B[],pk(k_1)),skS[])) that the attacker may have by 11 may be received at input {31}.
+So event endBfull(B[],B[],n_2) may be executed at {36} in session @sid.
+inj-event(endBfull(B[],B[],n_2),@occ36_1).
+
+13. By 12, inj-event(endBfull(B[],B[],n_2),@occ36_1).
+The goal is reached, represented in the following fact:
+inj-event(endBfull(B[],B[],n_2),@occ36_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new skA: skey creating skA_2 at {1}
+
+new skB: skey creating skB_2 at {2}
+
+new skS: skey creating skS_2 at {3}
+
+out(c, ~M) with ~M = pk(skA_2) at {7}
+
+out(c, ~M_1) with ~M_1 = pk(skB_2) at {8}
+
+out(c, ~M_2) with ~M_2 = pk(skS_2) at {9}
+
+insert keys(A,pk(skA_2)) at {10}
+
+insert keys(B,pk(skB_2)) at {11}
+
+in(c, B) at {24} in copy a
+
+in(c, B) at {26} in copy a
+
+new n_1: nonce creating n_3 at {27} in copy a
+
+out(c, ~M_3) with ~M_3 = n_3 at {28} in copy a
+
+in(c, sign((B,B,~M_3),a_1)) with sign((B,B,~M_3),a_1) = sign((B,B,n_3),a_1) at {29} in copy a
+
+out(c, ~M_4) with ~M_4 = B at {30} in copy a
+
+in(c, B) at {39} in copy a_2
+
+in(c, (B,pk(a_1))) at {43} in copy a_3
+
+insert keys(B,pk(a_1)) at {45} in copy a_3
+
+get keys(B,pk(a_1)) at {41} in copy a_2
+
+out(c, (~M_5,~M_6)) with ~M_5 = B, ~M_6 = sign((B,pk(a_1)),skS_2) at {40} in copy a_2
+
+in(c, (B,~M_6)) with ~M_6 = sign((B,pk(a_1)),skS_2) at {31} in copy a
+
+event endBparam(B,B) at {35} in copy a
+
+event endBfull(B,B,n_3) at {36} in copy a (goal)
+
+The event endBfull(B,B,n_3) is executed at {36} in copy a.
+A trace has been found.
+RESULT inj-event(endBfull(x,y,z)) ==> inj-event(beginBfull(x,y,z)) is false.
+RESULT (even event(endBfull(x,y,z)) ==> event(beginBfull(x,y,z)) is false.)
+
+--------------------------------------------------------------
+Verification summary:
+
+Query inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y)) is false.
+
+Query inj-event(endBfull(x,y,z)) ==> inj-event(beginBfull(x,y,z)) is false.
+
+--------------------------------------------------------------
+

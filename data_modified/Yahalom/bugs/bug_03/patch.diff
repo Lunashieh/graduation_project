@@ -1,0 +1,29 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\YAHALOM\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\YAHALOM\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\YAHALOM\BASELINE\model.pv
+   80:  query x: host, y: host; inj-event(endAparam(x,y)) ==> inj-event(beginAparam(x,y)).
+   81:  query x: host, y: host, z: key; inj-event(endAkey(x,y,z)) ==> inj-event(beginAkey(x,y,z)).
+   82:  query x: host, y: host; inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y)).
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\YAHALOM\BUGS\BUG_03\MODEL.PV
+   80:  query x: host, y: host; inj-event(endAparam(x,y)) ==> inj-event(beginAparam(x,y)).
+   81:  query x: host, y: host; inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y)).
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\YAHALOM\BASELINE\model.pv
+   83:  query x: host, y: host, z: key; inj-event(endBkey(x,y,z)) ==> inj-event(beginBkey(x,y,z)).
+   84:  
+   85:  (* Role of the initiator with identity xA and key kas shared with S *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\YAHALOM\BUGS\BUG_03\MODEL.PV
+   82:  query x: host, y: host, z: key; inj-event(endBkey(x,y,z)) ==> inj-event(beginBkey(x,y,z)).
+   83:  (* Role of the initiator with identity xA and key kas shared with S *)
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\YAHALOM\BASELINE\model.pv
+  127:          (* OK *)
+  128:          if a = A || a = B then
+  129:          event endBparam(a, xB);
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\YAHALOM\BUGS\BUG_03\MODEL.PV
+  125:          (* OK *)
+  126:          if a <> A || a <> B then
+  127:          event endBparam(a, xB);
+*****
+

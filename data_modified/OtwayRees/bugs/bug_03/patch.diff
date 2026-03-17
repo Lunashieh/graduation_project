@@ -1,0 +1,36 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BASELINE\model.pv
+  101:  free secretA, secretB: bitstring [private].
+  102:  query attacker(secretA);
+  103:        attacker(secretB).
+  104:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BUGS\BUG_03\MODEL.PV
+  101:  free secretA, secretB: bitstring [private].
+  102:  query attacker(secretB).
+  103:  
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BASELINE\model.pv
+  112:  event beginBkey(host, host, key).
+  113:  
+  114:  query x: host, y: host; inj-event(endAparam(x,y)) ==> inj-event(beginAparam(x,y)).
+  115:  query x: host, y: host, z: key; inj-event(endAkey(x,y,z)) ==> inj-event(beginAkey(x,y,z)).
+  116:  query x: host, y: host; inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y)).
+  117:  query x: host, y: host, z: key; inj-event(endBkey(x,y,z)) ==> inj-event(beginBkey(x,y,z)).
+  118:  
+  119:  (* Role of the initiator with identity xA and key kA shared with S *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BUGS\BUG_03\MODEL.PV
+  111:  event beginBkey(host, host, key).
+  112:  (* Role of the initiator with identity xA and key kA shared with S *)
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BASELINE\model.pv
+  162:          (* OK *)
+  163:          if xA1 = A || xA1 = B then
+  164:          event endBparam(xA1, xB);
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BUGS\BUG_03\MODEL.PV
+  155:          (* OK *)
+  156:          if xA1 <> A || xA1 <> B then
+  157:          event endBparam(xA1, xB);
+*****
+

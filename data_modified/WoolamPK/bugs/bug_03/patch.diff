@@ -1,0 +1,21 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BASELINE\model.pv
+  129:          in(c, (h: host, k: pkey));
+  130:          if h <> A && h <> B then insert keys(h,k).
+  131:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BUGS\BUG_03\MODEL.PV
+  129:          in(c, (h: host, k: pkey));
+  130:          if h <> A || h <> B then insert keys(h,k).
+  131:  
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BASELINE\model.pv
+  143:          ((!processInitiator(skA, skB)) | 
+  144:           (!processResponder(pkS)) | (!processS(skS)))
+  145:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BUGS\BUG_03\MODEL.PV
+  143:          ((!processInitiator(skA, skB)) | 
+  144:          (!processResponder(pkS)) | (!processS(skS)) | (!processK))
+  145:  
+*****
+

@@ -1,0 +1,21 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BUGS\BUG_02\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BASELINE\model.pv
+  108:          event beginBkey(xA, h2, k);
+  109:          out(c, (cert1, cert2, encrypt(sign((xA, h2, k), sskA), pk2)));
+  110:          if h2 = B then
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BUGS\BUG_02\MODEL.PV
+  108:          event beginBkey(xA, h2, k);
+  109:          out(c, (cert1, cert2, sign((xA, h2, k), sskA)));
+  110:          if h2 = B then
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BASELINE\model.pv
+  125:          let (=xB, =pkB) = checksign(cert2, pkS) in
+  126:          let ks = decrypt(km,skB) in
+  127:          let (=h1, =xB, k: key) = checksign(ks, pk1) in
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BUGS\BUG_02\MODEL.PV
+  125:          let (=xB, =pkB) = checksign(cert2, pkS) in
+  126:          let ks = km in
+  127:          let (=h1, =xB, k: key) = checksign(ks, pk1) in
+*****
+

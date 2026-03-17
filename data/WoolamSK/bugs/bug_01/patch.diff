@@ -1,0 +1,21 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMSK\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMSK\BUGS\BUG_01\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMSK\BASELINE\model.pv
+  104:          event beginBfull(xA, xB2, n);
+  105:          out(c, encrypt((m3, xB2, n), kas)).
+  106:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMSK\BUGS\BUG_01\MODEL.PV
+  104:          event beginBfull(xA, xB2, n);
+  105:          out(c, encrypt((m3, n), kas)).
+  106:  
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMSK\BASELINE\model.pv
+  134:          get keys(=xA1, kas) in
+  135:          let (=m3, =xB1, n:nonce) = decrypt(m2, kas) in
+  136:          out(c, encrypt((m5, xA1, n), kbs)).
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMSK\BUGS\BUG_01\MODEL.PV
+  134:          get keys(=xA1, kas) in
+  135:          let (=m3, n:nonce) = decrypt(m2, kas) in
+  136:          out(c, encrypt((m5, xA1, n), kbs)).
+*****
+

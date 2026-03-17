@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BASELINE\model.pv
+  127:          (* OK *)
+  128:          if a = A || a = B then
+  129:          event endBparam(a, xB);
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BUGS\BUG_03\MODEL.PV
+  127:          (* OK *)
+  128:          if a <> A || a <> B then
+  129:          event endBparam(a, xB);
+*****
+

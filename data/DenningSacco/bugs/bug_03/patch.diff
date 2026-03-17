@@ -1,0 +1,21 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BASELINE\model.pv
+   46:  
+   47:  (* Signatures *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BUGS\BUG_03\MODEL.PV
+   46:  
+   47:  fun kdf(bitstring): key.
+   48:  
+   49:  (* Signatures *)
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BASELINE\model.pv
+  106:          event beginBparam(xA, h2);
+  107:          new k: key;
+  108:          event beginBkey(xA, h2, k);
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BUGS\BUG_03\MODEL.PV
+  108:          event beginBparam(xA, h2);
+  109:          let k: key = kdf(cert2) in
+  110:          event beginBkey(xA, h2, k);
+*****
+

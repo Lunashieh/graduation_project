@@ -1,0 +1,10 @@
+# Yahalom bugs (notes)
+
+## bug_01 — Initiator no longer checks Na in the server certificate
+Change `let (b: host, k: key, =Na, nb: nonce) = decrypt(cert1, kas)` to `let (b: host, k: key, na2: nonce, nb: nonce) = decrypt(cert1, kas)`, so the initiator may accept a replayed server certificate that does not belong to its current run.
+
+## bug_02 — Responder no longer checks Nb in the final confirmation
+Remove the check `if nonce_to_bitstring(Nb) = decrypt(m, k)` in `processResponder`, so the responder may accept a replayed final message that does not confirm its current challenge.
+
+## bug_03 — Responder accepts non-honest initiators at completion
+Remove or weaken the final check `if a = A || a = B` in `processResponder`, so the responder may complete the protocol for an attacker-controlled identity that never ran the honest initiator role.

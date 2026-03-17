@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BUGS\BUG_02\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BASELINE\model.pv
+  102:             and send a test message to check that the key kab is secret *)
+  103:          if b = A || b = B then
+  104:          event endAparam(xA, b);
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BUGS\BUG_02\MODEL.PV
+  102:             and send a test message to check that the key kab is secret *)
+  103:          if b <> A || b <> B then
+  104:          event endAparam(xA, b);
+*****
+

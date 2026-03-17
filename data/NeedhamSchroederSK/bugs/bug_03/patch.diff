@@ -1,0 +1,30 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BASELINE\model.pv
+   49:  free A, B: host.
+   50:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BUGS\BUG_03\MODEL.PV
+   49:  free A, B: host.
+   50:  free Kpub: key.
+   51:  
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BASELINE\model.pv
+  108:          event endAkey(xA, h, k);
+  109:          out(c, encrypt(secretA, k)).
+  110:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BUGS\BUG_03\MODEL.PV
+  109:          event endAkey(xA, h, k);
+  110:          out(c, encrypt(secretA, Kpub)).
+  111:  
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BASELINE\model.pv
+  136:          event endBkey(h, xB, k);
+  137:          out(c, encrypt(secretB, k)).
+  138:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BUGS\BUG_03\MODEL.PV
+  137:          event endBkey(h, xB, k);
+  138:          out(c, encrypt(secretB, Kpub)).
+  139:  
+*****
+

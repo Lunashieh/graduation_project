@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BUGS\BUG_01\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BASELINE\model.pv
+  139:          in(c, (h: host, k: key));
+  140:          if h <> A && h <> B then insert keys(h,k).
+  141:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BUGS\BUG_01\MODEL.PV
+  139:          in(c, (h: host, k: key));
+  140:          if h <> A || h <> B then insert keys(h,k).
+  141:  
+*****
+

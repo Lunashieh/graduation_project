@@ -1,0 +1,20 @@
+{
+  "protocol_family": "Diffiehellman",
+  "variant": "baseline",
+  "generated_at": "2026-03-17T01:42:23",
+  "proverif": {
+    "command": "proverif -in pitype model.pv",
+    "all_ok": true,
+    "queries": [
+      {
+        "text": "not attacker(s[])",
+        "result": true
+      }
+    ],
+    "violated": []
+  },
+  "artifacts": {
+    "model": "model.pv",
+    "log": "proverif.log"
+  }
+}

@@ -1,0 +1,10 @@
+# ssh-transport bugs (notes)
+
+## bug_01 — Missing trusted host-key gate
+Remove the final check `if ServerVerKey = SVerKey` before sending `secretC`, so the client may send application data to an attacker-controlled server.
+
+## bug_02 — Signature transcript omits server DH share
+Change the signed hash so it no longer covers `dhpublicS`, allowing an attacker to replay a valid signature while substituting a different server DH share.
+
+## bug_03 — Traffic keys derived only from public DH shares
+Change the traffic key derivation so `enckey*` and `mackey*` depend only on public values such as `(dhpublicC, dhpublicS, ...)` instead of the DH shared secret `K`, so an eavesdropper can compute the same channel keys.

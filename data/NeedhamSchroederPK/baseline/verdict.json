@@ -1,0 +1,49 @@
+{
+  "protocol_family": "NeedhamSchroederPK",
+  "variant": "baseline",
+  "generated_at": "2026-03-04T22:06:46",
+  "proverif": {
+    "command": "proverif -in pitype model.pv",
+    "all_ok": true,
+    "queries": [
+      {
+        "text": "not attacker(secretANa[])",
+        "result": true
+      },
+      {
+        "text": "not attacker(secretANb[])",
+        "result": true
+      },
+      {
+        "text": "not attacker(secretBNa[])",
+        "result": true
+      },
+      {
+        "text": "not attacker(secretBNb[])",
+        "result": true
+      },
+      {
+        "text": "inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y))",
+        "result": true
+      },
+      {
+        "text": "inj-event(endBfull(x1,x2,x3,x4,x5,x6)) ==> inj-event(beginBfull(x1,x2,x3,x4,x5,x6))",
+        "result": true
+      },
+      {
+        "text": "inj-event(endAparam(x,y)) ==> inj-event(beginAparam(x,y))",
+        "result": true
+      },
+      {
+        "text": "inj-event(endAfull(x1,x2,x3,x4,x5,x6)) ==> inj-event(beginAfull(x1,x2,x3,x4,x5,x6))",
+        "result": true
+      }
+    ],
+    "violated": []
+  },
+  "artifacts": {
+    "model": "model.pv",
+    "log": "proverif.log",
+    "trace": "trace.txt"
+  }
+}

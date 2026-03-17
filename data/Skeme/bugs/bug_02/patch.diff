@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BUGS\BUG_02\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BASELINE\model.pv
+  125:          in(c, m3: bitstring);
+  126:          if m3 = keyhash((gy, m2, pkAr, pkB), K0) then
+  127:          (* OK *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BUGS\BUG_02\MODEL.PV
+  125:          in(c, m3: bitstring);
+  126:          if true then
+  127:          (* OK *)
+*****
+

@@ -1,0 +1,45 @@
+{
+  "protocol_family": "OtwayRees",
+  "variant": "baseline",
+  "generated_at": "2026-03-16T21:49:11",
+  "proverif": {
+    "command": "proverif -in pitype model.pv",
+    "all_ok": false,
+    "queries": [
+      {
+        "text": "not attacker(secretA[])",
+        "result": true
+      },
+      {
+        "text": "not attacker(secretB[])",
+        "result": true
+      },
+      {
+        "text": "inj-event(endAparam(x,y)) ==> inj-event(beginAparam(x,y))",
+        "result": false
+      },
+      {
+        "text": "inj-event(endAkey(x,y,z)) ==> inj-event(beginAkey(x,y,z))",
+        "result": false
+      },
+      {
+        "text": "inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y))",
+        "result": false
+      },
+      {
+        "text": "inj-event(endBkey(x,y,z)) ==> inj-event(beginBkey(x,y,z))",
+        "result": false
+      }
+    ],
+    "violated": [
+      "inj-event(endAparam(x,y)) ==> inj-event(beginAparam(x,y))",
+      "inj-event(endAkey(x,y,z)) ==> inj-event(beginAkey(x,y,z))",
+      "inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y))",
+      "inj-event(endBkey(x,y,z)) ==> inj-event(beginBkey(x,y,z))"
+    ]
+  },
+  "artifacts": {
+    "model": "model.pv",
+    "log": "proverif.log"
+  }
+}

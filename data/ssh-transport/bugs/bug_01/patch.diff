@@ -1,0 +1,10 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BUGS\BUG_01\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BASELINE\model.pv
+  124:      (* Send a secret if we are connected to a honest server *)
+  125:      if ServerVerKey = SVerKey then
+  126:      out(CsecchannelToS, secretC)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BUGS\BUG_01\MODEL.PV
+  124:      (* Send a secret if we are connected to a honest server *)
+  125:      out(CsecchannelToS, secretC)
+*****
+

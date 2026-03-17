@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\OTWAYREES\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\OTWAYREES\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\OTWAYREES\BASELINE\model.pv
+  162:          (* OK *)
+  163:          if xA1 = A || xA1 = B then
+  164:          event endBparam(xA1, xB);
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\OTWAYREES\BUGS\BUG_03\MODEL.PV
+  162:          (* OK *)
+  163:          if xA1 <> A || xA1 <> B then
+  164:          event endBparam(xA1, xB);
+*****
+

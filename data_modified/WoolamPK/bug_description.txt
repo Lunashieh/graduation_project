@@ -1,0 +1,10 @@
+# WooLamPK bugs (notes)
+
+## bug_01 — Initiator signature omits responder identity
+Change the initiator signature from `sign((xA, xB0, n), skxA)` to `sign((xA, n), skxA)`, and adjust the responder-side check accordingly, so the signed response is no longer bound to the intended responder.
+
+## bug_02 — Responder mixes claimed and certified initiator identities
+In `processResponder`, parse the server certificate as `(xA1, pkA2)` instead of forcing `xA1 = xA0`, verify the initiator signature with `xA1`, but still record completion events with `xA0`, so the responder may authenticate one identity while logging another.
+
+## bug_03 — Dynamic key registration accidentally enabled for honest names
+Enable `processK` in the top-level process and change its guard from `h <> A && h <> B` to `h <> A || h <> B`, so an attacker can register fake public keys for `A` or `B`.

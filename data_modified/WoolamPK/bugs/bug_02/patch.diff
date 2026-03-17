@@ -1,0 +1,13 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BUGS\BUG_02\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BASELINE\model.pv
+  111:          in(c, (=xA0, m4: bitstring)); 
+  112:          let (=xA0, pkA2: pkey) = checksign(m4, pkS) in
+  113:          let (=xA0, =xB, =n) = checksign(m,pkA2) in
+  114:          (* OK *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BUGS\BUG_02\MODEL.PV
+  111:          in(c, (=xA0, m4: bitstring)); 
+  112:          let (xA1: host, pkA2: pkey) = checksign(m4, pkS) in
+  113:          let (=xA1, =xB, =n) = checksign(m,pkA2) in
+  114:          (* OK *)
+*****
+

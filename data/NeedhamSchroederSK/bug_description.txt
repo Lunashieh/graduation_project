@@ -1,0 +1,10 @@
+# NeedhamSchroederSK bugs (notes)
+
+## bug_01 — Key directory overwrite
+Remove the restriction in `processK`, so an attacker can overwrite `keys(A, ...)` / `keys(B, ...)`.
+
+## bug_02 — Server leaks session key
+Add a debug output `out(c, k)` in `processS` after `new k: key;`.
+
+## bug_03 — Application data encrypted with wrong key
+Introduce a public fallback key `Kpub` and encrypt `secretA/secretB` with `Kpub` instead of the session key `k`.

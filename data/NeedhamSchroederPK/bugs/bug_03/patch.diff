@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BASELINE\model.pv
+  173:          in(c, m3: bitstring);
+  174:          if nonce_to_bitstring(Nb) = decrypt(m3, skB) then
+  175:          (* OK *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BUGS\BUG_03\MODEL.PV
+  173:          in(c, m3: bitstring);
+  174:          if nonce_to_bitstring(NY) = decrypt(m3, skB) then
+  175:          (* OK *)
+*****
+

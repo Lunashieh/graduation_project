@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BUGS\BUG_02\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BASELINE\model.pv
+  125:          event beginAkey(a, xB, k);
+  126:          if nonce_to_bitstring(Nb) = decrypt(m, k) then
+  127:          (* OK *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\YAHALOM\BUGS\BUG_02\MODEL.PV
+  125:          event beginAkey(a, xB, k);
+  126:          let nb2: bitstring = decrypt(m, k) in
+  127:          (* OK *)
+*****
+

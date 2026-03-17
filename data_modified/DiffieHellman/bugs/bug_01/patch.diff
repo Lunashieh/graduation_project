@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BUGS\BUG_01\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BASELINE\model.pv
+   74:           let k = exp(x1, n0) in 
+   75:           if pkX = pkB then
+   76:           out(c, enc(s,k)).
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BUGS\BUG_01\MODEL.PV
+   74:           let k = exp(x1, n0) in 
+   75:  
+   76:           out(c, enc(s,k)).
+*****
+

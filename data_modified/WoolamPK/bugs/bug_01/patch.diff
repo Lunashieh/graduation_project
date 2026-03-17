@@ -1,0 +1,21 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BUGS\BUG_01\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BASELINE\model.pv
+   95:          event beginBfull(xA, xB0, n);
+   96:          out(c,sign((xA, xB0, n),skxA)).
+   97:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BUGS\BUG_01\MODEL.PV
+   95:          event beginBfull(xA, xB0, n);
+   96:          out(c,sign((xA, n),skxA)).
+   97:  
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BASELINE\model.pv
+  112:          let (=xA0, pkA2: pkey) = checksign(m4, pkS) in
+  113:          let (=xA0, =xB, =n) = checksign(m,pkA2) in
+  114:          (* OK *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMPK\BUGS\BUG_01\MODEL.PV
+  112:          let (=xA0, pkA2: pkey) = checksign(m4, pkS) in
+  113:          let (=xA0, =n) = checksign(m,pkA2) in
+  114:          (* OK *)
+*****
+

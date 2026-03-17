@@ -1,0 +1,10 @@
+# WooLamSK bugs (notes)
+
+## bug_01 — Initiator token omits responder identity
+Change the initiator token from `encrypt((m3, xB2, n), kas)` to `encrypt((m3, n), kas)`, and adjust the server-side decryption accordingly, so the token is no longer bound to the intended responder.
+
+## bug_02 — Responder no longer checks the nonce in the server reply
+Change `let (=m5, =xA2, =N) = decrypt(m2, kbs)` to `let (=m5, =xA2, n2: nonce) = decrypt(m2, kbs)`, so the responder may accept a server reply that does not correspond to its current challenge.
+
+## bug_03 — Responder accepts non-honest initiators at completion
+Remove or weaken the final check `if xA2 = A || xA2 = B` in `processResponder`, so the responder may complete authentication for an attacker-controlled identity that never ran the initiator role.

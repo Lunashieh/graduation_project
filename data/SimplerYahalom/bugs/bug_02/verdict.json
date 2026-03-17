@@ -1,0 +1,39 @@
+{
+  "protocol_family": "SimplerYahalom",
+  "variant": "bug_02",
+  "generated_at": "2026-03-17T00:04:54",
+  "proverif": {
+    "command": "proverif -in pitype model.pv",
+    "all_ok": false,
+    "queries": [
+      {
+        "text": "not attacker(secretA[])",
+        "result": false
+      },
+      {
+        "text": "not attacker(secretB[])",
+        "result": true
+      },
+      {
+        "text": "inj-event(endAparam(x,y)) ==> inj-event(beginAparam(x,y))",
+        "result": false
+      },
+      {
+        "text": "inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y))",
+        "result": true
+      },
+      {
+        "text": "inj-event(endBkey(x,y,z,t)) ==> inj-event(beginBkey(x,y,z,t))",
+        "result": true
+      }
+    ],
+    "violated": [
+      "not attacker(secretA[])",
+      "inj-event(endAparam(x,y)) ==> inj-event(beginAparam(x,y))"
+    ]
+  },
+  "artifacts": {
+    "model": "model.pv",
+    "log": "proverif.log"
+  }
+}

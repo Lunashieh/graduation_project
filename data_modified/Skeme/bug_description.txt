@@ -1,0 +1,10 @@
+# SKEME bugs (notes)
+
+## bug_01 — Initiator skips responder authentication tag check
+Remove the check `if m3 = keyhash((gx, m2, pkX, pkA), K0)` in `processA`, so the initiator may accept a forged responder message and derive a session key with attacker-chosen DH data.
+
+## bug_02 — Responder skips initiator confirmation check
+Remove the check `if m3 = keyhash((gy, m2, pkAr, pkB), K0)` in `processB`, so the responder may complete the protocol without receiving a valid final confirmation from the initiator.
+
+## bug_03 — Session key derived from public transcript
+Change the session key derivation from the DH shared secret to public values such as `(gx, gy)`, so an attacker can compute the same session key from the observed transcript.

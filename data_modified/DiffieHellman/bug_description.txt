@@ -1,0 +1,10 @@
+# SignedDiffieHellman bugs (notes)
+
+## bug_01 — Missing responder key pinning
+Remove the final check `if pkX = pkB` in `p0`, so the initiator may send the secret under a key established with an attacker-controlled public key.
+
+## bug_02 — Responder signs a public constant instead of its fresh DH share
+Change `out(c, sign(exp(g, n1), skB))` to `out(c, sign(g, skB))`, so the initiator derives the session key from a public value instead of the responder’s fresh Diffie-Hellman share.
+
+## bug_03 — Encrypt application data with received public share
+Change `out(c, enc(s,k))` to `out(c, enc(s,x1))` in `p0`, so the secret is encrypted with the responder’s public DH value instead of the shared secret.

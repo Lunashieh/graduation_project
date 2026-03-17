@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\OTWAYREES\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\OTWAYREES\BUGS\BUG_01\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\OTWAYREES\BASELINE\model.pv
+  184:          in(c, (h: host, k: key));
+  185:          if h <> A && h <> B then insert keys(h,k).
+  186:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\OTWAYREES\BUGS\BUG_01\MODEL.PV
+  184:          in(c, (h: host, k: key));
+  185:          if h <> A || h <> B then insert keys(h,k).
+  186:  
+*****
+

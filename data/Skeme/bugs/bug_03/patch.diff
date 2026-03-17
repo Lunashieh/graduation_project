@@ -1,0 +1,21 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BASELINE\model.pv
+  102:          if m3 = keyhash((gx, m2, pkX, pkA), K0) then
+  103:          let sh = hash(exp(m2, x)) in 
+  104:          event beginBkey(pkX, sh);
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BUGS\BUG_03\MODEL.PV
+  102:          if m3 = keyhash((gx, m2, pkX, pkA), K0) then
+  103:          let sh = hash((gx, m2)) in
+  104:          event beginBkey(pkX, sh);
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BASELINE\model.pv
+  121:          let gy = exp(g,y) in
+  122:          let sh = hash(exp(m2, y)) in
+  123:          event beginAkey(pkAr, sh);
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BUGS\BUG_03\MODEL.PV
+  121:          let gy = exp(g,y) in
+  122:          let sh = hash((m2, gy)) in
+  123:          event beginAkey(pkAr, sh);
+*****
+

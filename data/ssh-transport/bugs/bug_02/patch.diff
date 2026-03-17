@@ -1,0 +1,21 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BUGS\BUG_02\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BASELINE\model.pv
+  103:      let K = exp(dhpublicS, dhsecretC) in
+  104:      let h = H((ServerVerKey, dhpublicC, dhpublicS, K)) in
+  105:      if checknmrsign(ServerVerKey, sign, h) = true then
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BUGS\BUG_02\MODEL.PV
+  103:      let K = exp(dhpublicS, dhsecretC) in
+  104:      let h = H((ServerVerKey, dhpublicC)) in
+  105:      if checknmrsign(ServerVerKey, sign, h) = true then
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BASELINE\model.pv
+  134:      let K = exp(dhpublicC, dhsecretS) in
+  135:      let h = H((SVerKey, dhpublicC, dhpublicS, K)) in
+  136:      out(c, (KEXDHREPLY, SVerKey, dhpublicS, nmrsign(SSigKey, h)));
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BUGS\BUG_02\MODEL.PV
+  134:      let K = exp(dhpublicC, dhsecretS) in
+  135:      let h = H((SVerKey, dhpublicC)) in
+  136:      out(c, (KEXDHREPLY, SVerKey, dhpublicS, nmrsign(SSigKey, h)));
+*****
+

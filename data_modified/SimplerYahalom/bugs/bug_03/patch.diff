@@ -1,0 +1,21 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BASELINE\model.pv
+  120:             is secret *)
+  121:          if a = A || a = B then
+  122:          event endBparam(xB, a);
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BUGS\BUG_03\MODEL.PV
+  120:             is secret *)
+  121:          if a <> A || a <> B then
+  122:          event endBparam(xB, a);
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BASELINE\model.pv
+  123:          event endBkey(xB, a, Nb, kab);
+  124:          out(c, encrypt(secretB, kab)). 
+  125:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SIMPLERYAHALOM\BUGS\BUG_03\MODEL.PV
+  123:          event endBkey(xB, a, Nb, kab);
+  124:          out(c, encrypt(secretB, kab)).
+  125:  
+*****
+

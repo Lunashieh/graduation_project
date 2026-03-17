@@ -1,0 +1,10 @@
+# SimplerYahalom-unid bugs (notes)
+
+## bug_01 — Key registration guard bug
+Change the guard in `processK` from `h <> A && h <> B` to `h <> A || h <> B`, so an attacker can also register fake long-term keys for `A` or `B`.
+
+## bug_02 — Initiator accepts untrusted peer
+Change the final trust check in `processInitiator` from `b = A || b = B` to `b <> A || b <> B`, so the initiator may send `secretA` even when the peer is attacker-controlled.
+
+## bug_03 — Responder accepts untrusted peer
+Change the final trust check in `processResponder` from `a = A || a = B` to `a <> A || a <> B`, so the responder may send `secretB` even when the peer is attacker-controlled.

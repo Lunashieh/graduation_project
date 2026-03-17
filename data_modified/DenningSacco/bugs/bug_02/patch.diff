@@ -1,0 +1,33 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_02\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv
+   86:  event beginBkey(host, host, key).
+   87:  
+   88:  query x, y: host; inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y)).
+   89:  query x, y: host, z: key; inj-event(endBkey(x,y,z)) ==> inj-event(beginBkey(x,y,z)).
+   90:  
+   91:  (* Initiator *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_02\MODEL.PV
+   86:  event beginBkey(host, host, key).
+   87:  (* Initiator *)
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv
+  108:          event beginBkey(xA, h2, k);
+  109:          out(c, (cert1, cert2, encrypt(sign((xA, h2, k), sskA), pk2)));
+  110:          if h2 = B then
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_02\MODEL.PV
+  104:          event beginBkey(xA, h2, k);
+  105:          out(c, (cert1, cert2, sign((xA, h2, k), sskA)));
+  106:          if h2 = B then
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv
+  125:          let (=xB, =pkB) = checksign(cert2, pkS) in
+  126:          let ks = decrypt(km,skB) in
+  127:          let (=h1, =xB, k: key) = checksign(ks, pk1) in
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_02\MODEL.PV
+  121:          let (=xB, =pkB) = checksign(cert2, pkS) in
+  122:          let ks = km in
+  123:          let (=h1, =xB, k: key) = checksign(ks, pk1) in
+*****
+

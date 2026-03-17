@@ -1,0 +1,24 @@
+{
+  "protocol_family": "WoolamPK",
+  "variant": "baseline",
+  "generated_at": "2026-03-17T03:24:06",
+  "proverif": {
+    "command": "proverif -in pitype model.pv",
+    "all_ok": true,
+    "queries": [
+      {
+        "text": "inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y))",
+        "result": true
+      },
+      {
+        "text": "inj-event(endBfull(x,y,z)) ==> inj-event(beginBfull(x,y,z))",
+        "result": true
+      }
+    ],
+    "violated": []
+  },
+  "artifacts": {
+    "model": "model.pv",
+    "log": "proverif.log"
+  }
+}

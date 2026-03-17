@@ -1,0 +1,32 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv
+   46:  
+   47:  (* Signatures *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_03\MODEL.PV
+   46:  
+   47:  fun kdf(bitstring): key.
+   48:  
+   49:  (* Signatures *)
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv
+   87:  
+   88:  query x, y: host; inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y)).
+   89:  query x, y: host, z: key; inj-event(endBkey(x,y,z)) ==> inj-event(beginBkey(x,y,z)).
+   90:  
+   91:  (* Initiator *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_03\MODEL.PV
+   89:  
+   90:  (* Initiator *)
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv
+  106:          event beginBparam(xA, h2);
+  107:          new k: key;
+  108:          event beginBkey(xA, h2, k);
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_03\MODEL.PV
+  105:          event beginBparam(xA, h2);
+  106:          let k: key = kdf(cert2) in
+  107:          event beginBkey(xA, h2, k);
+*****
+

@@ -1,0 +1,22 @@
+{
+  "protocol_family": "ssh-transport",
+  "variant": "bug_01",
+  "generated_at": "2026-03-17T01:26:00",
+  "proverif": {
+    "command": "proverif -in pitype model.pv",
+    "all_ok": false,
+    "queries": [
+      {
+        "text": "not attacker(secretC[])",
+        "result": false
+      }
+    ],
+    "violated": [
+      "not attacker(secretC[])"
+    ]
+  },
+  "artifacts": {
+    "model": "model.pv",
+    "log": "proverif.log"
+  }
+}

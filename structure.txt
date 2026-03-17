@@ -1,0 +1,39 @@
+project_root/
+  data/                        
+    NeedhamSchroederPK/
+      baseline/
+        model.pv
+        proverif.log
+        verdict.json
+      bugs/
+        bug_01/
+          model.pv
+          patch.diff
+          proverif.log
+          verdict.json
+        bug_02/
+        bug_03/
+    DiffieHellman/
+    ...
+
+  llm_runs/                     
+    gpt-4o-mini/
+      NeedhamSchroederPK/
+        baseline/
+          input_bundle.json
+          t1_diagram.md
+          t2_expl.md
+          t3_patch.diff
+          hardcheck.json
+          judge.json
+        BIND_01/
+          ...
+    gpt-5-mini/
+      ...
+
+  manifest/
+    cases.jsonl                 
+    prompts/
+      t1_prompt.txt
+      t2_prompt.txt
+      t3_prompt.txt

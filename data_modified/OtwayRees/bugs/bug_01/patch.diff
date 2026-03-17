@@ -1,0 +1,25 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BUGS\BUG_01\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BASELINE\model.pv
+  112:  event beginBkey(host, host, key).
+  113:  
+  114:  query x: host, y: host; inj-event(endAparam(x,y)) ==> inj-event(beginAparam(x,y)).
+  115:  query x: host, y: host, z: key; inj-event(endAkey(x,y,z)) ==> inj-event(beginAkey(x,y,z)).
+  116:  query x: host, y: host; inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y)).
+  117:  query x: host, y: host, z: key; inj-event(endBkey(x,y,z)) ==> inj-event(beginBkey(x,y,z)).
+  118:  
+  119:  (* Role of the initiator with identity xA and key kA shared with S *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BUGS\BUG_01\MODEL.PV
+  112:  event beginBkey(host, host, key).
+  113:  (* Role of the initiator with identity xA and key kA shared with S *)
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BASELINE\model.pv
+  184:          in(c, (h: host, k: key));
+  185:          if h <> A && h <> B then insert keys(h,k).
+  186:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\OTWAYREES\BUGS\BUG_01\MODEL.PV
+  178:          in(c, (h: host, k: key));
+  179:          if h <> A || h <> B then insert keys(h,k).
+  180:  
+*****
+

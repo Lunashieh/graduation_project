@@ -1,0 +1,17 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BASELINE\model.pv
+  105:      if checknmrsign(ServerVerKey, sign, h) = true then
+  106:      let enckeyCtoS = H((K, h, keyEncCtoS)) in
+  107:      let enckeyStoC = H((K, h, keyEncStoC)) in
+  108:      let mackeyCtoS = H((K, h, keyMacCtoS)) in
+  109:      let mackeyStoC = H((K, h, keyMacStoC)) in
+  110:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SSH-TRANSPORT\BUGS\BUG_03\MODEL.PV
+  105:      if checknmrsign(ServerVerKey, sign, h) = true then
+  106:      let enckeyCtoS = H((dhpublicC, dhpublicS, keyEncCtoS)) in
+  107:      let enckeyStoC = H((dhpublicC, dhpublicS, keyEncStoC)) in
+  108:      let mackeyCtoS = H((dhpublicC, dhpublicS, keyMacCtoS)) in
+  109:      let mackeyStoC = H((dhpublicC, dhpublicS, keyMacStoC)) in
+  110:  
+*****
+

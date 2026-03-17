@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BUGS\BUG_01\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BASELINE\model.pv
+  101:          let K0 = hash((Ka, Kb)) in
+  102:          if m3 = keyhash((gx, m2, pkX, pkA), K0) then
+  103:          let sh = hash(exp(m2, x)) in 
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\SKEME\BUGS\BUG_01\MODEL.PV
+  101:          let K0 = hash((Ka, Kb)) in
+  102:          if true then
+  103:          let sh = hash(exp(m2, x)) in 
+*****
+

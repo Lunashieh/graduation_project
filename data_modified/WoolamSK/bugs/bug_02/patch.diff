@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMSK\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMSK\BUGS\BUG_02\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMSK\BASELINE\model.pv
+  122:          in(c, m2: bitstring);
+  123:          let (=m5, =xA2, =N) = decrypt(m2, kbs) in
+  124:          (* OK *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\WOOLAMSK\BUGS\BUG_02\MODEL.PV
+  122:          in(c, m2: bitstring);
+  123:          let (=m5, =xA2, n2: nonce) = decrypt(m2, kbs) in
+  124:          (* OK *)
+*****
+

@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BUGS\BUG_02\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BASELINE\model.pv
+  193:          in(c, (h: host, k: pkey));
+  194:          if h <> A && h <> B then insert keys(h,k).
+  195:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BUGS\BUG_02\MODEL.PV
+  193:          in(c, (h: host, k: pkey));
+  194:          insert keys(h,k).
+  195:  
+*****
+

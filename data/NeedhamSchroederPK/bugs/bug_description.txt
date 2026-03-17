@@ -1,0 +1,13 @@
+# NeedhamSchroederPK bugs (notes)
+
+## bug_01 — Key registration not restricted (A/B overwrite)
+Change: `processK` allows inserting keys for any host (including A and B).  
+Effect: attacker can replace A/B public key in `keys`, often breaking secrecy/auth.
+
+## bug_02 — Same as bug_01 (duplicate)
+Change: identical to bug_01 (`processK` restriction removed).  
+Note: keep only one of bug_01 / bug_02, or redesign bug_02 to a different edit.
+
+## bug_03 — Responder checks wrong nonce in Message 7 (NY instead of Nb)
+Change: `if nonce_to_bitstring(Nb) = decrypt(m3, skB)` → uses `NY` instead.  
+Effect: attacker can satisfy the check using chosen `NY`, leading to secrecy/auth failures.

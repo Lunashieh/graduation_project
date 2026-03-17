@@ -1,0 +1,27 @@
+{
+  "protocol_family": "DenningSacco",
+  "variant": "bug_03",
+  "generated_at": "2026-03-17T05:02:09",
+  "proverif": {
+    "command": "proverif -in pitype model.pv",
+    "all_ok": false,
+    "queries": [
+      {
+        "text": "not attacker(secretA[])",
+        "result": false
+      },
+      {
+        "text": "not attacker(secretB[])",
+        "result": false
+      }
+    ],
+    "violated": [
+      "not attacker(secretA[])",
+      "not attacker(secretB[])"
+    ]
+  },
+  "artifacts": {
+    "model": "model.pv",
+    "log": "proverif.log"
+  }
+}

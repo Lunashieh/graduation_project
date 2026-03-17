@@ -1,0 +1,32 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_01\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv
+   78:  
+   79:  free secretA, secretB: bitstring [private].
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_01\MODEL.PV
+   78:  
+   79:  (* Queries *)
+   80:  
+   81:  free secretA, secretB: bitstring [private].
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv
+   87:  
+   88:  query x, y: host; inj-event(endBparam(x,y)) ==> inj-event(beginBparam(x,y)).
+   89:  query x, y: host, z: key; inj-event(endBkey(x,y,z)) ==> inj-event(beginBkey(x,y,z)).
+   90:  
+   91:  (* Initiator *)
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_01\MODEL.PV
+   89:  
+   90:  (* Initiator *)
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BASELINE\model.pv
+  150:          in(c, (h: host, pk: pkey));
+  151:          if h <> A && h <> B then insert enc_keys(h, pk).
+  152:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA_MODIFIED\DENNINGSACCO\BUGS\BUG_01\MODEL.PV
+  149:          in(c, (h: host, pk: pkey));
+  150:          insert enc_keys(h, pk).
+  151:  
+*****
+

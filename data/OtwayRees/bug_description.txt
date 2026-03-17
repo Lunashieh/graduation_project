@@ -1,0 +1,10 @@
+# OtwayRees bugs (notes)
+
+## bug_01 — Key registration guard bug
+Change the guard in `processK` from `h <> A && h <> B` to `h <> A || h <> B`, so an attacker can also register fake long-term keys for `A` or `B`.
+
+## bug_02 — Initiator accepts untrusted peer
+Change the final trust check in `processInitiator` from `xB0 = A || xB0 = B` to `xB0 <> A || xB0 <> B`, so the initiator may send `secretA` even when the peer is attacker-controlled.
+
+## bug_03 — Responder accepts untrusted peer
+Change the final trust check in `processResponder` from `xA1 = A || xA1 = B` to `xA1 <> A || xA1 <> B`, so the responder may send `secretB` even when the peer is attacker-controlled.

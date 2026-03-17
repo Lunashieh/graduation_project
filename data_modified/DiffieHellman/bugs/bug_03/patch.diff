@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BUGS\BUG_03\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BASELINE\model.pv
+   75:           if pkX = pkB then
+   76:           out(c, enc(s,k)).
+   77:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BUGS\BUG_03\MODEL.PV
+   75:           if pkX = pkB then
+   76:           out(c, enc(s,x1)).
+   77:  
+*****
+

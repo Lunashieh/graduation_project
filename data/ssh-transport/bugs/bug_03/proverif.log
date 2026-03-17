@@ -1,0 +1,269 @@
+Linear part:
+exp(exp(g,x),y) = exp(exp(g,y),x)
+Completing equations...
+Completed equations:
+exp(exp(g,x),y) = exp(exp(g,y),x)
+Convergent part: No equation.
+Process 0 (that is, the initial process):
+{1}new SSigKey: skey;
+{2}let SVerKey: pkey = pk(SSigKey) in
+{3}out(c, SVerKey);
+(
+    {4}!
+    {5}new dhsecretC: exponent;
+    {6}let dhpublicC: G = exp(g,dhsecretC) in
+    {7}out(c, (KEXDHINIT,dhpublicC));
+    {8}in(c, (=KEXDHREPLY,ServerVerKey: pkey,dhpublicS: G,sign: bitstring));
+    {9}let K: G = exp(dhpublicS,dhsecretC) in
+    {10}let h: key = H((ServerVerKey,dhpublicC,dhpublicS,K)) in
+    {11}if (checknmrsign(ServerVerKey,sign,h) = true) then
+    {12}let enckeyCtoS: key = H((dhpublicC,dhpublicS,keyEncCtoS)) in
+    {13}let enckeyStoC: key = H((dhpublicC,dhpublicS,keyEncStoC)) in
+    {14}let mackeyCtoS: key = H((dhpublicC,dhpublicS,keyMacCtoS)) in
+    {15}let mackeyStoC: key = H((dhpublicC,dhpublicS,keyMacStoC)) in
+    {16}new CsecchannelToS: channel;
+    {17}new CsecchannelFromS: channel;
+    (
+        {18}!
+        {19}in(CsecchannelToS, m2payload: bitstring);
+        {20}out(c, (enc(enckeyCtoS,m2payload),mac(mackeyCtoS,m2payload)))
+    ) | (
+        {21}!
+        {22}in(c, (m4enc: bitstring,m4mac: bitstring));
+        {23}let m4payload: bitstring = dec(enckeyStoC,m4enc) in
+        {24}if (m4mac = mac(mackeyStoC,m4payload)) then
+        {25}out(CsecchannelFromS, m4payload)
+    ) | (
+        {26}if (ServerVerKey = SVerKey) then
+        {27}out(CsecchannelToS, secretC)
+    )
+) | (
+    {28}!
+    {29}let SSigKey_1: skey = SSigKey in
+    {30}in(c, (=KEXDHINIT,dhpublicC_1: G));
+    {31}new dhsecretS: exponent;
+    {32}let dhpublicS_1: G = exp(g,dhsecretS) in
+    {33}let K_1: G = exp(dhpublicC_1,dhsecretS) in
+    {34}let h_1: key = H((SVerKey,dhpublicC_1,dhpublicS_1,K_1)) in
+    {35}out(c, (KEXDHREPLY,SVerKey,dhpublicS_1,nmrsign(SSigKey_1,h_1)));
+    {36}let enckeyCtoS_1: key = H((K_1,h_1,keyEncCtoS)) in
+    {37}let enckeyStoC_1: key = H((K_1,h_1,keyEncStoC)) in
+    {38}let mackeyCtoS_1: key = H((K_1,h_1,keyMacCtoS)) in
+    {39}let mackeyStoC_1: key = H((K_1,h_1,keyMacStoC)) in
+    {40}new SsecchannelToC: channel;
+    {41}new SsecchannelFromC: channel;
+    (
+        {42}!
+        {43}in(SsecchannelToC, m3payload: bitstring);
+        {44}out(c, (enc(enckeyStoC_1,m3payload),mac(mackeyStoC_1,m3payload)))
+    ) | (
+        {45}!
+        {46}in(c, (m2enc: bitstring,m2mac: bitstring));
+        {47}let m2payload_1: bitstring = dec(enckeyCtoS_1,m2enc) in
+        {48}if (m2mac = mac(mackeyCtoS_1,m2payload_1)) then
+        {49}out(SsecchannelFromC, m2payload_1)
+    ) | (
+        0
+    )
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new SSigKey: skey;
+{2}let SVerKey: pkey = pk(SSigKey) in
+{3}out(c, SVerKey);
+(
+    {4}!
+    {5}new dhsecretC: exponent;
+    {6}let dhpublicC: G = exp(g,dhsecretC) in
+    {7}out(c, (KEXDHINIT,dhpublicC));
+    {8}in(c, (=KEXDHREPLY,ServerVerKey: pkey,dhpublicS: G,sign: bitstring));
+    {9}let K: G = exp(dhpublicS,dhsecretC) in
+    {10}let h: key = H((ServerVerKey,dhpublicC,dhpublicS,K)) in
+    {11}if (checknmrsign(ServerVerKey,sign,h) = true) then
+    {16}new CsecchannelToS: channel;
+    {17}new CsecchannelFromS: channel;
+    (
+        {18}!
+        {19}in(CsecchannelToS, m2payload: bitstring);
+        {14}let mackeyCtoS: key = H((dhpublicC,dhpublicS,keyMacCtoS)) in
+        {12}let enckeyCtoS: key = H((dhpublicC,dhpublicS,keyEncCtoS)) in
+        {20}out(c, (enc(enckeyCtoS,m2payload),mac(mackeyCtoS,m2payload)))
+    ) | (
+        {21}!
+        {22}in(c, (m4enc: bitstring,m4mac: bitstring));
+        {13}let enckeyStoC: key = H((dhpublicC,dhpublicS,keyEncStoC)) in
+        {23}let m4payload: bitstring = dec(enckeyStoC,m4enc) in
+        {15}let mackeyStoC: key = H((dhpublicC,dhpublicS,keyMacStoC)) in
+        {24}if (m4mac = mac(mackeyStoC,m4payload)) then
+        {25}out(CsecchannelFromS, m4payload)
+    ) | (
+        {26}if (ServerVerKey = SVerKey) then
+        {27}out(CsecchannelToS, secretC)
+    )
+) | (
+    {28}!
+    {30}in(c, (=KEXDHINIT,dhpublicC_1: G));
+    {31}new dhsecretS: exponent;
+    {33}let K_1: G = exp(dhpublicC_1,dhsecretS) in
+    {32}let dhpublicS_1: G = exp(g,dhsecretS) in
+    {34}let h_1: key = H((SVerKey,dhpublicC_1,dhpublicS_1,K_1)) in
+    {29}let SSigKey_1: skey = SSigKey in
+    {35}out(c, (KEXDHREPLY,SVerKey,dhpublicS_1,nmrsign(SSigKey_1,h_1)));
+    {40}new SsecchannelToC: channel;
+    {41}new SsecchannelFromC: channel;
+    (
+        {42}!
+        {43}in(SsecchannelToC, m3payload: bitstring);
+        {39}let mackeyStoC_1: key = H((K_1,h_1,keyMacStoC)) in
+        {37}let enckeyStoC_1: key = H((K_1,h_1,keyEncStoC)) in
+        {44}out(c, (enc(enckeyStoC_1,m3payload),mac(mackeyStoC_1,m3payload)))
+    ) | (
+        {45}!
+        {46}in(c, (m2enc: bitstring,m2mac: bitstring));
+        {36}let enckeyCtoS_1: key = H((K_1,h_1,keyEncCtoS)) in
+        {47}let m2payload_1: bitstring = dec(enckeyCtoS_1,m2enc) in
+        {38}let mackeyCtoS_1: key = H((K_1,h_1,keyMacCtoS)) in
+        {48}if (m2mac = mac(mackeyCtoS_1,m2payload_1)) then
+        {49}out(SsecchannelFromC, m2payload_1)
+    ) | (
+        0
+    )
+)
+
+-- Query not attacker(secretC[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+ok, secrecy assumption verified: fact unreachable attacker(dhsecretC[!1 = v])
+ok, secrecy assumption verified: fact unreachable attacker(dhsecretS[dhpublicC_1 = v,!1 = v_1])
+ok, secrecy assumption verified: fact unreachable attacker(SSigKey[])
+Starting query not attacker(secretC[])
+goal reachable: attacker(secretC[])
+
+Derivation:
+Abbreviations:
+dhsecretC_1 = dhsecretC[!1 = @sid]
+dhsecretS_1 = dhsecretS[dhpublicC_1 = exp(g,dhsecretC_1),!1 = @sid_1]
+CsecchannelToS_1 = CsecchannelToS[sign = nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretS_1),dhsecretC_1)))),dhpublicS = exp(g,dhsecretS_1),ServerVerKey = pk(SSigKey[]),!1 = @sid]
+
+1. The message (KEXDHINIT,exp(g,dhsecretC_1)) may be sent to the attacker at output {7}.
+attacker((KEXDHINIT,exp(g,dhsecretC_1))).
+
+2. By 1, the attacker may know (KEXDHINIT,exp(g,dhsecretC_1)).
+Using the function 2-proj-2-tuple the attacker may obtain exp(g,dhsecretC_1).
+attacker(exp(g,dhsecretC_1)).
+
+3. Using the function KEXDHINIT the attacker may obtain KEXDHINIT.
+attacker(KEXDHINIT).
+
+4. By 3, the attacker may know KEXDHINIT.
+By 2, the attacker may know exp(g,dhsecretC_1).
+Using the function 2-tuple the attacker may obtain (KEXDHINIT,exp(g,dhsecretC_1)).
+attacker((KEXDHINIT,exp(g,dhsecretC_1))).
+
+5. The message (KEXDHINIT,exp(g,dhsecretC_1)) that the attacker may have by 4 may be received at input {30}.
+So the message (KEXDHREPLY,pk(SSigKey[]),exp(g,dhsecretS_1),nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretS_1),dhsecretC_1))))) may be sent to the attacker at output {35}.
+attacker((KEXDHREPLY,pk(SSigKey[]),exp(g,dhsecretS_1),nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretS_1),dhsecretC_1)))))).
+
+6. By 5, the attacker may know (KEXDHREPLY,pk(SSigKey[]),exp(g,dhsecretS_1),nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretS_1),dhsecretC_1))))).
+Using the function 4-proj-4-tuple the attacker may obtain nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretS_1),dhsecretC_1)))).
+attacker(nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretS_1),dhsecretC_1))))).
+
+7. The message (KEXDHINIT,exp(g,dhsecretC_1)) that the attacker may have by 4 may be received at input {30}.
+So the message (KEXDHREPLY,pk(SSigKey[]),exp(g,dhsecretS_1),nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretC_1),dhsecretS_1))))) may be sent to the attacker at output {35}.
+attacker((KEXDHREPLY,pk(SSigKey[]),exp(g,dhsecretS_1),nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretC_1),dhsecretS_1)))))).
+
+8. By 7, the attacker may know (KEXDHREPLY,pk(SSigKey[]),exp(g,dhsecretS_1),nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretC_1),dhsecretS_1))))).
+Using the function 3-proj-4-tuple the attacker may obtain exp(g,dhsecretS_1).
+attacker(exp(g,dhsecretS_1)).
+
+9. The message pk(SSigKey[]) may be sent to the attacker at output {3}.
+attacker(pk(SSigKey[])).
+
+10. Using the function KEXDHREPLY the attacker may obtain KEXDHREPLY.
+attacker(KEXDHREPLY).
+
+11. By 10, the attacker may know KEXDHREPLY.
+By 9, the attacker may know pk(SSigKey[]).
+By 8, the attacker may know exp(g,dhsecretS_1).
+By 6, the attacker may know nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretS_1),dhsecretC_1)))).
+Using the function 4-tuple the attacker may obtain (KEXDHREPLY,pk(SSigKey[]),exp(g,dhsecretS_1),nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretS_1),dhsecretC_1))))).
+attacker((KEXDHREPLY,pk(SSigKey[]),exp(g,dhsecretS_1),nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretS_1),dhsecretC_1)))))).
+
+12. The message (KEXDHREPLY,pk(SSigKey[]),exp(g,dhsecretS_1),nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretS_1),dhsecretC_1))))) that the attacker may have by 11 may be received at input {8}.
+So the message secretC[] may be sent on channel CsecchannelToS_1 at output {27}.
+mess(CsecchannelToS_1,secretC[]).
+
+13. The message (KEXDHREPLY,pk(SSigKey[]),exp(g,dhsecretS_1),nmrsign(SSigKey[],H((pk(SSigKey[]),exp(g,dhsecretC_1),exp(g,dhsecretS_1),exp(exp(g,dhsecretS_1),dhsecretC_1))))) that the attacker may have by 11 may be received at input {8}.
+The message secretC[] that may be sent on channel CsecchannelToS_1 by 12 may be received at input {19}.
+So the message (enc(H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS)),secretC[]),mac(H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyMacCtoS)),secretC[])) may be sent to the attacker at output {20}.
+attacker((enc(H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS)),secretC[]),mac(H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyMacCtoS)),secretC[]))).
+
+14. By 13, the attacker may know (enc(H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS)),secretC[]),mac(H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyMacCtoS)),secretC[])).
+Using the function 1-proj-2-tuple the attacker may obtain enc(H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS)),secretC[]).
+attacker(enc(H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS)),secretC[])).
+
+15. Using the function keyEncCtoS the attacker may obtain keyEncCtoS.
+attacker(keyEncCtoS).
+
+16. By 2, the attacker may know exp(g,dhsecretC_1).
+By 8, the attacker may know exp(g,dhsecretS_1).
+By 15, the attacker may know keyEncCtoS.
+Using the function 3-tuple the attacker may obtain (exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS).
+attacker((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS)).
+
+17. By 16, the attacker may know (exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS).
+Using the function H the attacker may obtain H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS)).
+attacker(H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS))).
+
+18. By 17, the attacker may know H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS)).
+By 14, the attacker may know enc(H((exp(g,dhsecretC_1),exp(g,dhsecretS_1),keyEncCtoS)),secretC[]).
+Using the function dec the attacker may obtain secretC[].
+attacker(secretC[]).
+
+19. By 18, attacker(secretC[]).
+The goal is reached, represented in the following fact:
+attacker(secretC[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new SSigKey: skey creating SSigKey_2 at {1}
+
+out(c, ~M) with ~M = pk(SSigKey_2) at {3}
+
+new dhsecretC: exponent creating dhsecretC_2 at {5} in copy a
+
+out(c, (KEXDHINIT,~M_1)) with ~M_1 = exp(g,dhsecretC_2) at {7} in copy a
+
+in(c, (KEXDHINIT,~M_1)) with ~M_1 = exp(g,dhsecretC_2) at {30} in copy a_1
+
+new dhsecretS: exponent creating dhsecretS_2 at {31} in copy a_1
+
+out(c, (KEXDHREPLY,~M_2,~M_3,~M_4)) with ~M_2 = pk(SSigKey_2), ~M_3 = exp(g,dhsecretS_2), ~M_4 = nmrsign(SSigKey_2,H((pk(SSigKey_2),exp(g,dhsecretC_2),exp(g,dhsecretS_2),exp(exp(g,dhsecretC_2),dhsecretS_2)))) at {35} in copy a_1
+
+new SsecchannelToC: channel creating SsecchannelToC_1 at {40} in copy a_1
+
+new SsecchannelFromC: channel creating SsecchannelFromC_1 at {41} in copy a_1
+
+in(c, (KEXDHREPLY,~M,~M_3,~M_4)) with ~M = pk(SSigKey_2), ~M_3 = exp(g,dhsecretS_2), ~M_4 = nmrsign(SSigKey_2,H((pk(SSigKey_2),exp(g,dhsecretC_2),exp(g,dhsecretS_2),exp(exp(g,dhsecretS_2),dhsecretC_2)))) at {8} in copy a
+
+new CsecchannelToS: channel creating CsecchannelToS_2 at {16} in copy a
+
+new CsecchannelFromS: channel creating CsecchannelFromS_1 at {17} in copy a
+
+out(CsecchannelToS_2, secretC) at {27} in copy a received at {19} in copy a, a_2
+
+out(c, (~M_5,~M_6)) with ~M_5 = enc(H((exp(g,dhsecretC_2),exp(g,dhsecretS_2),keyEncCtoS)),secretC), ~M_6 = mac(H((exp(g,dhsecretC_2),exp(g,dhsecretS_2),keyMacCtoS)),secretC) at {20} in copy a, a_2
+
+The attacker has the message dec(H((~M_1,~M_3,keyEncCtoS)),~M_5) = secretC.
+A trace has been found.
+RESULT not attacker(secretC[]) is false.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query not attacker(secretC[]) is false.
+
+--------------------------------------------------------------
+

@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BUGS\BUG_02\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BASELINE\model.pv
+   82:           let k = exp(x0, n1) in 
+   83:           out(c,sign(exp(g, n1), skB));
+   84:           in (c,m: bitstring); 
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DIFFIEHELLMAN\BUGS\BUG_02\MODEL.PV
+   82:           let k = exp(x0, n1) in 
+   83:           out(c,sign(g, skB));
+   84:           in (c,m: bitstring); 
+*****
+

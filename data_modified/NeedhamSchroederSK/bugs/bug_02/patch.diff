@@ -1,0 +1,10 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BUGS\BUG_02\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BASELINE\model.pv
+  146:          new k: key;
+  147:          out(c, encrypt((n, h2, k, encrypt((k,h1,j),ks2)), ks1)).
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERSK\BUGS\BUG_02\MODEL.PV
+  146:          new k: key;
+  147:          out(c, k);
+  148:          out(c, encrypt((n, h2, k, encrypt((k,h1,j),ks2)), ks1)).
+*****
+

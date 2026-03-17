@@ -1,0 +1,11 @@
+正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BUGS\BUG_01\MODEL.PV
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BASELINE\model.pv
+  150:          in(c, (h: host, pk: pkey));
+  151:          if h <> A && h <> B then insert enc_keys(h, pk).
+  152:  
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\DENNINGSACCO\BUGS\BUG_01\MODEL.PV
+  150:          in(c, (h: host, pk: pkey));
+  151:          insert enc_keys(h, pk).
+  152:  
+*****
+
