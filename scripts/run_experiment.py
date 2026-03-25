@@ -54,6 +54,13 @@ def main():
     )
 
     parser.add_argument(
+        "--prompt_versions",
+        type=str,
+        default="v1",
+        help='Comma-separated prompt versions, e.g. "v1,v2,v3"'
+    )
+
+    parser.add_argument(
         "--trace_modes",
         type=str,
         default="",
@@ -92,6 +99,12 @@ def main():
     else:
         prompt_modes = PROMPT_MODES
 
+    user_prompt_versions = parse_csv_arg(args.prompt_versions)
+    if user_prompt_versions:
+        prompt_versions = user_prompt_versions
+    else:
+        prompt_versions = ["v1"]
+
     user_trace_modes = parse_csv_arg(args.trace_modes)
     if user_trace_modes:
         trace_modes = user_trace_modes
@@ -106,33 +119,40 @@ def main():
     print(f"Total cases to run: {len(all_cases)}")
     print(f"Models: {models}")
     print(f"Prompt modes: {prompt_modes}")
+    print(f"Prompt versions: {prompt_versions}")
     print(f"Trace modes: {trace_modes}")
 
     for model in models:
         for prompt_mode in prompt_modes:
-            for trace_mode in trace_modes:
-                run_name = f"{experiment_id}__{model}__{prompt_mode}__{trace_mode}"
-
-                print(f"\nRunning combo: {run_name}")
-
-                for case in tqdm(all_cases, desc=run_name):
-                    full_prompt = build_full_prompt(
-                        case=case,
-                        prompt_mode=prompt_mode,
-                        trace_mode=trace_mode
+            for prompt_version in prompt_versions:
+                for trace_mode in trace_modes:
+                    run_name = (
+                        f"{experiment_id}__{model}__{prompt_mode}__"
+                        f"{prompt_version}__{trace_mode}"
                     )
 
-                    result = call_model_with_retry(
-                        case=case,
-                        model=model,
-                        full_prompt=full_prompt,
-                        run_name=run_name,
-                        max_retries=MAX_RETRIES
-                    )
+                    print(f"\nRunning combo: {run_name}")
 
-                    result["prompt_mode"] = prompt_mode
-                    result["trace_mode"] = trace_mode
-                    manifest_records.append(result)
+                    for case in tqdm(all_cases, desc=run_name):
+                        full_prompt = build_full_prompt(
+                            case=case,
+                            prompt_mode=prompt_mode,
+                            prompt_version=prompt_version,
+                            trace_mode=trace_mode
+                        )
+
+                        result = call_model_with_retry(
+                            case=case,
+                            model=model,
+                            full_prompt=full_prompt,
+                            run_name=run_name,
+                            max_retries=MAX_RETRIES
+                        )
+
+                        result["prompt_mode"] = prompt_mode
+                        result["prompt_version"] = prompt_version
+                        result["trace_mode"] = trace_mode
+                        manifest_records.append(result)
 
     manifest_path = MANIFEST_DIR / f"{experiment_id}.json"
     manifest_path.write_text(

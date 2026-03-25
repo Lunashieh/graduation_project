@@ -1,13 +1,21 @@
+from pathlib import Path
+
 from config import PROMPTS_DIR
 
 
-def load_prompt_template(prompt_mode: str) -> str:
+def load_prompt_template(prompt_mode: str, prompt_version: str) -> str:
     """
-    Load the prompt template from prompts/<prompt_mode>.txt
+    Load the prompt template from:
+    prompts/<prompt_mode>/<prompt_version>.txt
+
+    Example:
+    prompts/zero_shot/v1.txt
     """
-    prompt_path = PROMPTS_DIR / f"{prompt_mode}.txt"
+    prompt_path = PROMPTS_DIR / prompt_mode / f"{prompt_version}.txt"
+
     if not prompt_path.exists():
         raise FileNotFoundError(f"Prompt file not found: {prompt_path}")
+
     return prompt_path.read_text(encoding="utf-8")
 
 
@@ -15,8 +23,8 @@ def build_trace_evidence(case: dict, trace_mode: str) -> str:
     """
     Build the evidence block according to the selected trace mode.
 
-    In your current dataset, only log_text is clearly available.
-    It is normalized into case["trace_text"].
+    Current dataset fields:
+    - case["trace_text"] comes from log_text in dataset.json
     """
     trace_text = case.get("trace_text", "").strip()
 
@@ -34,7 +42,12 @@ def build_trace_evidence(case: dict, trace_mode: str) -> str:
     raise ValueError(f"Unknown trace_mode: {trace_mode}")
 
 
-def build_full_prompt(case: dict, prompt_mode: str, trace_mode: str) -> str:
+def build_full_prompt(
+    case: dict,
+    prompt_mode: str,
+    prompt_version: str,
+    trace_mode: str
+) -> str:
     """
     Build one full prompt string for the selected case.
 
@@ -45,7 +58,7 @@ def build_full_prompt(case: dict, prompt_mode: str, trace_mode: str) -> str:
     - bug_pv
     - trace_text
     """
-    template = load_prompt_template(prompt_mode)
+    template = load_prompt_template(prompt_mode, prompt_version)
     evidence = build_trace_evidence(case, trace_mode)
 
     bug_pv = case.get("bug_pv", "").strip()

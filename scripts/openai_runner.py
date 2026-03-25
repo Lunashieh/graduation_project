@@ -123,6 +123,7 @@ def call_model_once(case: dict, model: str, full_prompt: str, run_name: str) -> 
             model=model,
             input=full_prompt,
             max_output_tokens=MAX_OUTPUT_TOKENS,
+            store=False,
         )
 
         response_dict = response_to_dict(response)
