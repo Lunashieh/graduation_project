@@ -1,0 +1,41 @@
+[
+  {
+    "provider": "openai",
+    "sample_id": "NeedhamSchroederPK_bug_02",
+    "protocol": "NeedhamSchroederPK",
+    "bug_id": "bug_02",
+    "model": "gpt-5.4",
+    "status": "success",
+    "raw_path": "D:\\graduation project\\project_root\\outputs\\tuning\\raw\\20260401T122745Z__gpt-5.4__zero_shot__v1__trace_only\\NeedhamSchroederPK_bug_02__20260401T122745Z.json",
+    "parsed_path": "D:\\graduation project\\project_root\\outputs\\tuning\\parsed\\20260401T122745Z__gpt-5.4__zero_shot__v1__trace_only\\NeedhamSchroederPK_bug_02__20260401T122745Z.json",
+    "prompt_mode": "zero_shot",
+    "prompt_version": "v1",
+    "trace_mode": "trace_only"
+  },
+  {
+    "provider": "openai",
+    "sample_id": "NeedhamSchroederPK_bug_02",
+    "protocol": "NeedhamSchroederPK",
+    "bug_id": "bug_02",
+    "model": "gpt-5.4",
+    "status": "success",
+    "raw_path": "D:\\graduation project\\project_root\\outputs\\tuning\\raw\\20260401T122745Z__gpt-5.4__zero_shot__v2__trace_only\\NeedhamSchroederPK_bug_02__20260401T122844Z.json",
+    "parsed_path": "D:\\graduation project\\project_root\\outputs\\tuning\\parsed\\20260401T122745Z__gpt-5.4__zero_shot__v2__trace_only\\NeedhamSchroederPK_bug_02__20260401T122844Z.json",
+    "prompt_mode": "zero_shot",
+    "prompt_version": "v2",
+    "trace_mode": "trace_only"
+  },
+  {
+    "provider": "openai",
+    "sample_id": "NeedhamSchroederPK_bug_02",
+    "protocol": "NeedhamSchroederPK",
+    "bug_id": "bug_02",
+    "model": "gpt-5.4",
+    "status": "success",
+    "raw_path": "D:\\graduation project\\project_root\\outputs\\tuning\\raw\\20260401T122745Z__gpt-5.4__zero_shot__v3__trace_only\\NeedhamSchroederPK_bug_02__20260401T122936Z.json",
+    "parsed_path": "D:\\graduation project\\project_root\\outputs\\tuning\\parsed\\20260401T122745Z__gpt-5.4__zero_shot__v3__trace_only\\NeedhamSchroederPK_bug_02__20260401T122936Z.json",
+    "prompt_mode": "zero_shot",
+    "prompt_version": "v3",
+    "trace_mode": "trace_only"
+  }
+]

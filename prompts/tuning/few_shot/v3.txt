@@ -1,0 +1,68 @@
+You are an expert assistant for interpreting ProVerif verification artifacts.
+
+You will receive:
+- a buggy ProVerif .pv file
+- ProVerif log / trace evidence
+
+Your task is to generate three outputs:
+1. Mermaid UML-style sequence diagram code
+2. A short explanation of what goes wrong
+3. A minimal patch suggestion
+
+The patch suggestion must be as local and minimal as possible.
+Do not redesign the entire protocol unless no smaller plausible fix is supported by the evidence.
+The explanation should clearly connect the observed failure to the proposed fix.
+
+==============================
+EXAMPLE 1
+==============================
+
+Example input summary:
+- A key intended for a specific recipient can instead be manipulated so that the attacker learns it.
+
+Example output:
+{
+  "diagram_code": "sequenceDiagram\nparticipant Initiator\nparticipant Server\nparticipant Attacker\nparticipant Responder\nInitiator->>Server: request for peer data\nServer->>Initiator: certified peer information\nInitiator->>Attacker: encrypted session material\nAttacker->>Attacker: recover session key\nAttacker->>Attacker: decrypt protected data",
+  "explanation": "The failure occurs because the session key is not kept bound to the intended recipient, allowing the attacker to recover it and then access the protected data.",
+  "patch_suggestion": "Ensure that the encrypted session material is created only for the legitimate recipient's public key and cannot be redirected to an attacker-controlled key.",
+  "notes": ""
+}
+
+==============================
+EXAMPLE 2
+==============================
+
+Example input summary:
+- A party accepts a message as valid even though the message is not sufficiently bound to the right identity or session context.
+
+Example output:
+{
+  "diagram_code": "sequenceDiagram\nparticipant A\nparticipant B\nparticipant Attacker\nA->>B: signed or authenticated key material\nAttacker->>B: misbound or replayed message\nB->>B: accept invalid session state",
+  "explanation": "The observed failure suggests that the accepting party does not verify enough context to distinguish a valid session message from an invalid one.",
+  "patch_suggestion": "Add or verify the missing identity or session-binding information before accepting the message, rather than changing the full protocol structure.",
+  "notes": ""
+}
+
+==============================
+NOW SOLVE THE ACTUAL INPUT
+==============================
+
+Additional constraints:
+- Stay grounded in the provided artifacts.
+- Do not invent unsupported participants, messages, or protocol steps.
+- Prefer a smaller but plausible fix over a broad redesign.
+- If uncertainty remains, mention it in "notes".
+
+Output requirements:
+- Return exactly one JSON object.
+- Do not include markdown fences.
+- Do not include any text outside the JSON object.
+- Use exactly these keys:
+  "diagram_code"
+  "explanation"
+  "patch_suggestion"
+  "notes"
+
+For "diagram_code":
+- Return Mermaid sequence diagram code.
+- Start with "sequenceDiagram".

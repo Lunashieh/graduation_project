@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_03",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T013835Z",
+  "usage": {
+    "input_tokens": 10017,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 1130,
+    "output_tokens_details": {
+      "reasoning_tokens": 628
+    },
+    "total_tokens": 11147
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant Server\nparticipant Initiator\nparticipant Responder\nAttacker->>Server: request certificates for (A,B) or (B,B)\nServer->>Attacker: cert1 = sign((A or B, spk(...)), skS), cert2 = sign((B, pk(B)), skS)\nAttacker->>Attacker: compute k = kdf(cert2)\nAttacker->>Initiator: start as xA = A or B\nAttacker->>Initiator: send (cert1, cert2)\nInitiator->>Attacker: (cert1, cert2, encrypt(sign((xA, B, k), sskA/sskB), pk(B)))\nInitiator->>Attacker: sencrypt(secretA, k)\nAttacker->>Attacker: decrypt secretA using k\nAttacker->>Responder: start as xB = B\nAttacker->>Responder: forward (cert1, cert2, encrypted signed key message)\nResponder->>Attacker: sencrypt(secretB, k)\nAttacker->>Attacker: decrypt secretB using k",
+    "explanation": "The failure comes from the initiator computing the session key as `kdf(cert2)`. In the trace, `cert2` is the public server-signed certificate for B's encryption key, which the attacker receives from the server and therefore also knows. ProVerif explicitly derives `attacker(kdf(sign((B,pk(skB)),skS)))`, then uses that value to decrypt both `sencrypt(secretA,k)` and `sencrypt(secretB,k)`. So the protocol turns a public certificate into the session key, making the key predictable to anyone.",
+    "patch_suggestion": "Make the session key fresh and secret instead of deriving it from `cert2`. The most local patch is in `processInitiator`: replace `let k: key = kdf(cert2) in` with `new k: key;`. Keep sending `k` inside the signed-and-encrypted key message as already done, so the responder still learns it only by decrypting `km`.",
+    "notes": "This patch directly addresses the secrecy break shown in the trace. The original file comments also mention failed injective correspondences; those replay/authentication issues are separate and are not fixed by this minimal secrecy patch."
+  }
+}

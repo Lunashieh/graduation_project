@@ -1,31 +1,21 @@
-from pathlib import Path
-
-from config import PROMPTS_DIR
+from config import PROMPTS_FINAL_DIR, PROMPTS_TUNING_DIR
 
 
-def load_prompt_template(prompt_mode: str, prompt_version: str) -> str:
-    """
-    Load the prompt template from:
-    prompts/<prompt_mode>/<prompt_version>.txt
-
-    Example:
-    prompts/zero_shot/v1.txt
-    """
-    prompt_path = PROMPTS_DIR / prompt_mode / f"{prompt_version}.txt"
-
+def load_tuning_prompt(prompt_mode: str, prompt_version: str) -> str:
+    prompt_path = PROMPTS_TUNING_DIR / prompt_mode / f"{prompt_version}.txt"
     if not prompt_path.exists():
         raise FileNotFoundError(f"Prompt file not found: {prompt_path}")
+    return prompt_path.read_text(encoding="utf-8")
 
+
+def load_final_prompt(prompt_name: str) -> str:
+    prompt_path = PROMPTS_FINAL_DIR / f"{prompt_name}.txt"
+    if not prompt_path.exists():
+        raise FileNotFoundError(f"Prompt file not found: {prompt_path}")
     return prompt_path.read_text(encoding="utf-8")
 
 
 def build_trace_evidence(case: dict, trace_mode: str) -> str:
-    """
-    Build the evidence block according to the selected trace mode.
-
-    Current dataset fields:
-    - case["trace_text"] comes from log_text in dataset.json
-    """
     trace_text = case.get("trace_text", "").strip()
 
     if trace_mode == "trace_only":
@@ -42,29 +32,12 @@ def build_trace_evidence(case: dict, trace_mode: str) -> str:
     raise ValueError(f"Unknown trace_mode: {trace_mode}")
 
 
-def build_full_prompt(
-    case: dict,
-    prompt_mode: str,
-    prompt_version: str,
-    trace_mode: str
-) -> str:
-    """
-    Build one full prompt string for the selected case.
-
-    Current dataset fields:
-    - id
-    - protocol
-    - bug_id
-    - bug_pv
-    - trace_text
-    """
-    template = load_prompt_template(prompt_mode, prompt_version)
+def build_prompt_from_text(case: dict, prompt_text: str, trace_mode: str) -> str:
     evidence = build_trace_evidence(case, trace_mode)
-
     bug_pv = case.get("bug_pv", "").strip()
 
-    prompt = f"""
-{template}
+    return f"""
+{prompt_text}
 
 ==============================
 ACTUAL INPUT
@@ -120,4 +93,12 @@ Extra requirements:
 - Do not output any text outside the JSON object.
 """.strip()
 
-    return prompt
+
+def build_tuning_prompt(case: dict, prompt_mode: str, prompt_version: str, trace_mode: str) -> str:
+    prompt_text = load_tuning_prompt(prompt_mode, prompt_version)
+    return build_prompt_from_text(case, prompt_text, trace_mode)
+
+
+def build_final_prompt(case: dict, prompt_name: str, trace_mode: str) -> str:
+    prompt_text = load_final_prompt(prompt_name)
+    return build_prompt_from_text(case, prompt_text, trace_mode)

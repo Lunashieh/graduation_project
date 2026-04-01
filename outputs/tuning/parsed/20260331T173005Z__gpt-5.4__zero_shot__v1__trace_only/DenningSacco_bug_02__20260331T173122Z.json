@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_02",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T173122Z",
+  "usage": {
+    "input_tokens": 10189,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 3662,
+    "output_tokens_details": {
+      "reasoning_tokens": 3089
+    },
+    "total_tokens": 13851
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant Adv as Attacker\n    participant S as Server\n    participant I as Initiator\n    participant R as Responder\n\n    Adv->>S: (A,B)\n    S-->>Adv: certA_sig = sign((A,spkA),skS)\\ncertB_enc = sign((B,pkB),skS)\n    Adv->>S: (B,B)\n    S-->>Adv: certB_sig = sign((B,spkB),skS)\\ncertB_enc = sign((B,pkB),skS)\n\n    Adv->>I: xA = A\n    Adv->>I: certA_sig, certB_sig\n    I-->>Adv: km = sign((A,B,k),sskA)\n    I-->>Adv: cA = sencrypt(secretA,k)\n    Note over Adv: getmess(km) = (A,B,k)\\nattacker learns k\n    Adv->>Adv: sdecrypt(cA,k) = secretA\n\n    Adv->>R: xB = B\n    Adv->>R: certA_sig, certB_enc, km\n    R-->>Adv: cB = sencrypt(secretB,k)\n    Adv->>Adv: sdecrypt(cB,k) = secretB",
+    "explanation": "The secrecy failure comes from the signature model, not from breaking any long-term key. The rule getmess(sign(m,k)) = m lets the attacker read the plaintext of any signature. After forcing an initiator run, the attacker obtains sign((A,B,k),sskA) or sign((B,B,k),sskB), extracts the fresh session key k, and then decrypts sencrypt(secretA,k). The same exposed k can then be replayed to the responder with valid server-signed certificates, yielding sencrypt(secretB,k), which the attacker also decrypts.",
+    "patch_suggestion": "Make signatures opaque to the attacker. In the ProVerif model, remove the message-recovery equation:\nreduc forall m: bitstring, k: sskey; getmess(sign(m,k)) = m.\nKeep only verification via checksign(...). If message-recovery signatures were intended, then the session key must not be sent only inside a signature; it should be encrypted for the responder before being sent.",
+    "notes": "The detailed trace also shows a type/bitstring quirk: the initiator accepts a server signature carrying B's signing key where an encryption-key certificate is expected. However, the observed secrecy break already follows directly from getmess on the signed session-key message."
+  }
+}

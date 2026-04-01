@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_03",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T184945Z",
+  "usage": {
+    "input_tokens": 9713,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 1340,
+    "output_tokens_details": {
+      "reasoning_tokens": 516
+    },
+    "total_tokens": 11053
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant Attacker\n    participant S as Server\n    participant I as Initiator\n    participant R as Responder\n\n    Note over Attacker,S: Public setup publishes spk(A), pk(A), spk(B), pk(B), pkS\n\n    alt SecretA trace\n        Attacker->>I: xA = B\n        Attacker->>S: (B, B)\n        S-->>Attacker: cert1 = sign((B, spk(B)), skS), cert2 = sign((B, pk(B)), skS)\n        Attacker->>I: (cert1, cert2)\n        Note over I: beginBparam(B,B)\n        Note over I: k = kdf(cert2)\n        Note over I: beginBkey(B,B,k)\n        I-->>Attacker: (cert1, cert2, encrypt(sign((B,B,k), sskB), pk(B)))\n        I-->>Attacker: sencrypt(secretA, k)\n        Note over Attacker: computes k from public cert2 and decrypts secretA\n    else SecretB trace\n        Attacker->>I: xA = A\n        Attacker->>R: xB = B\n        Attacker->>S: (A, B)\n        S-->>Attacker: cert1 = sign((A, spk(A)), skS), cert2 = sign((B, pk(B)), skS)\n        Attacker->>I: (cert1, cert2)\n        Note over I: beginBparam(A,B)\n        Note over I: k = kdf(cert2)\n        Note over I: beginBkey(A,B,k)\n        I-->>Attacker: (cert1, cert2, encrypt(sign((A,B,k), sskA), pk(B)))\n        Attacker->>R: (cert1, cert2, encrypt(sign((A,B,k), sskA), pk(B)))\n        Note over R: endBparam(A,B)\n        Note over R: endBkey(A,B,k)\n        R-->>Attacker: sencrypt(secretB, k)\n        Note over Attacker: computes k from public cert2 and decrypts secretB\n    end",
+    "explanation": "The failure shown in the trace is that the initiator sets the session key as kdf(cert2). But cert2 is a server-signed certificate sent on the public channel, so the attacker also knows cert2 and can compute the same key. In the first trace, the attacker starts the initiator with xA = B, obtains certificates for (B,B) from the server, and then learns secretA because the initiator outputs sencrypt(secretA, k) with publicly computable k. In the second trace, the attacker gets certificates for (A,B), lets the initiator produce the encrypted key message for B, forwards it to the responder, and then decrypts sencrypt(secretB, k) for the same reason. So both secrecy queries fail because the session key is derived only from public data.",
+    "patch_suggestion": "Make the session key fresh instead of deriving it from cert2. The minimal change is in processInitiator:\nreplace\n  let k: key = kdf(cert2) in\nwith\n  new k: key;\nThen keep signing and encrypting that fresh k as before. This removes the public derivation that lets the attacker recompute the session key.",
+    "notes": "The provided EXPECTPV comment says secrecy should be true and only injective correspondence should fail, but the actual ProVerif log included here shows both secrecy queries are false. The log excerpt does not re-run the event queries, so the explanation above is limited to the secrecy attacks explicitly evidenced by the trace."
+  }
+}

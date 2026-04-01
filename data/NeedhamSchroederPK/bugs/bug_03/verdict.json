@@ -1,7 +1,7 @@
 {
   "protocol_family": "NeedhamSchroederPK",
   "variant": "bug_03",
-  "generated_at": "2026-03-04T21:12:42",
+  "generated_at": "2026-04-01T14:14:12",
   "proverif": {
     "command": "proverif -in pitype model.pv",
     "all_ok": false,
@@ -47,7 +47,6 @@
   },
   "artifacts": {
     "model": "model.pv",
-    "log": "proverif.log",
-    "trace": "trace.txt"
+    "log": "proverif.log"
   }
 }

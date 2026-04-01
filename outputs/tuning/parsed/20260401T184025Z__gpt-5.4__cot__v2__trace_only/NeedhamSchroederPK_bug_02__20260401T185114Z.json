@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_02",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T185114Z",
+  "usage": {
+    "input_tokens": 2921,
+    "input_tokens_details": {
+      "cached_tokens": 2816
+    },
+    "output_tokens": 5323,
+    "output_tokens_details": {
+      "reasoning_tokens": 4986
+    },
+    "total_tokens": 8244
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant PV as ProVerif\nparticipant F as model.pv\nPV->>F: Parse input file\nF-->>PV: Syntax error at line 138, chars 15-17\nPV-->>PV: Abort before verifying queries",
+    "explanation": "What goes wrong is a parse failure, not a protocol-level attack. ProVerif reports `Error: Syntax error` at line 138, characters 15-17, so the model cannot be parsed and none of the secrecy or authentication queries are actually checked.",
+    "patch_suggestion": "Fix the syntax locally around the reported location in `processInitiator` (near the `if hostX = B || hostX = A then` branch). A minimal conservative rewrite is to make that branch an explicit grouped process, for example:\n`if hostX = B || hostX = A then (\n  event endAparam(xA, hostX);\n  event endAfull(xA, hostX, pkX, pkxA, Na, NX2);\n  out(c, sencrypt(secretANa, Na));\n  out(c, sencrypt(secretANb, NX2))\n)`\nThen rerun ProVerif to see whether any further errors remain.",
+    "notes": "The supplied evidence only proves a syntax error at line 138, chars 15-17; it does not provide a successful parse or any execution trace. The file also contains visibly corrupted text later in a comment near the server-launch block, but the given log does not directly attribute the reported error to that later region."
+  }
+}

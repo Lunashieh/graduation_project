@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_02",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T123053Z",
+  "usage": {
+    "input_tokens": 3051,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4374,
+    "output_tokens_details": {
+      "reasoning_tokens": 4107
+    },
+    "total_tokens": 7425
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Model\nparticipant ProVerif\nModel->>ProVerif: Load NeedhamSchroederPK_bug_02 model\nProVerif->>ProVerif: Parse process condition in the protocol code\nProVerif-->>Model: Syntax error at line 138, chars 15-17\nProVerif-->>Model: Verification does not proceed",
+    "explanation": "This case does not reach protocol verification: ProVerif stops on a syntax error while parsing the model. The reported location is consistent with a boolean guard written with `||` in a process `if` condition, so the file is rejected before any secrecy or authentication query can be analyzed.",
+    "patch_suggestion": "Rewrite the offending guard using ProVerif-accepted conditional structure, e.g. replace `if xA = A || xA = B then` with nested tests such as `if xA = A then ... else if xA = B then ...`. Apply the same style to similar `||` or `&&` guards elsewhere in the file.",
+    "notes": "There is no attack trace here because the model does not parse. The exact offending token is most likely one of the `||` conditions; similar guards in the file may need the same fix."
+  }
+}

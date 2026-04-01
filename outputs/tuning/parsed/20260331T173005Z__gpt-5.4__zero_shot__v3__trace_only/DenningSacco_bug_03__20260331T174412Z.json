@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_03",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T174412Z",
+  "usage": {
+    "input_tokens": 9709,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 2909,
+    "output_tokens_details": {
+      "reasoning_tokens": 2221
+    },
+    "total_tokens": 12618
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    actor Attacker\n    participant S as Server\n    participant Init as Initiator\n    participant Resp as Responder\n\n    alt Attack on secretA\n        Attacker->>S: request certs for (B,B)\n        S-->>Attacker: cert1 = sign((B, spkB), skS), cert2 = sign((B, pkB), skS)\n        Attacker->>Init: xA = B\n        Attacker->>Init: cert1, cert2\n        Note over Init: computes k = kdf(cert2)\n        Init-->>Attacker: cert1, cert2, encrypt(sign((B,B,k), sskB), pkB)\n        Init-->>Attacker: sencrypt(secretA, k)\n        Note over Attacker: cert2 is public, so attacker computes the same k and decrypts secretA\n    else Attack on secretB\n        Attacker->>S: request certs for (A,B)\n        S-->>Attacker: cert1 = sign((A, spkA), skS), cert2 = sign((B, pkB), skS)\n        Attacker->>Init: xA = A\n        Attacker->>Init: cert1, cert2\n        Note over Init: computes k = kdf(cert2)\n        Init-->>Attacker: cert1, cert2, km = encrypt(sign((A,B,k), sskA), pkB)\n        Attacker->>Resp: xB = B\n        Attacker->>Resp: cert1, cert2, km\n        Resp-->>Attacker: sencrypt(secretB, k)\n        Note over Attacker: attacker already knows k from cert2 and decrypts secretB\n    end",
+    "explanation": "The failure is that the session key is computed as `kdf(cert2)` in the initiator. But `cert2` is a server-signed certificate sent over the public channel, and the trace shows the attacker can obtain it directly from `processS`. Since `kdf` is public, the attacker derives exactly the same `k` as the honest parties, so both `sencrypt(secretA, k)` and `sencrypt(secretB, k)` become decryptable. The trace for `secretB` additionally shows the attacker forwarding the initiator's encrypted key message to the responder, who then returns data under that attacker-known key.",
+    "patch_suggestion": "Make the session key fresh instead of deriving it from the public certificate. In `processInitiator`, replace:\n`let k: key = kdf(cert2) in`\nwith:\n`new k: key;`\nand keep the existing `sign((xA, h2, k), sskA)` / encryption to `pk2` unchanged. This is a local fix: the responder already learns `k` from `km`, but the attacker can no longer compute `k` from public data.",
+    "notes": "The rebinding warnings are not the cause of the shown attack. Also, even after fixing secrecy, the injective correspondence failures mentioned in the model comments may still need separate attention."
+  }
+}

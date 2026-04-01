@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_01",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T185006Z",
+  "usage": {
+    "input_tokens": 23467,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4157,
+    "output_tokens_details": {
+      "reasoning_tokens": 3267
+    },
+    "total_tokens": 27624
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant Att as Attacker\n    participant K as processK\n    participant I as Initiator\n    participant R as Responder(B)\n    participant S as Server\n\n    alt Representative secrecy trace from the log (secretANb)\n        Att->>K: (B, pk(a_9))\n        K-->>K: insert keys(B, pk(a_9))\n        Att->>I: start with (A, B)\n        I->>S: (A, B)\n        S-->>I: sign((pk(a_9), B), skS)\n        I->>Att: encrypt((Na, A), pk(a_9))\n        Note over Att: Attacker decrypts and learns Na\n        Att->>R: B\n        Att->>R: encrypt((Na, A), pk(skB))\n        R->>S: (B, A)\n        S-->>R: sign((pk(skA), A), skS)\n        R-->>Att: encrypt((Na, Nb, B), pk(skA))\n        Att->>I: encrypt((Na, Nb, B), pk(skA))\n        I->>Att: encrypt(Nb, pk(a_9))\n        Note over Att: Attacker decrypts and learns Nb\n        I-->>Att: sencrypt(secretANb, Nb)\n    else Representative endA* authentication trace from the log\n        Att->>K: (B, pk(a_5))\n        K-->>K: insert keys(B, pk(a_5))\n        Att->>I: start with (B, B)\n        I->>S: (B, B)\n        S-->>I: sign((pk(a_5), B), skS)\n        I->>Att: encrypt((Na, B), pk(a_5))\n        Note over Att: Attacker decrypts and learns Na\n        Att->>I: encrypt((Na, NX2, B), pk(skA))\n        Note over I: Code accepts this with decrypt(m, skA)\n        Note over I: event endAparam(B,B) and endAfull(B,B,...) occur\n    end",
+    "explanation": "The supplied traces show that the attacker can use processK to insert arbitrary public keys for honest names A or B, and the server then signs those bindings. As a result, honest roles accept certificates such as sign((pk(attackerKey),B),skS) or sign((pk(attackerKey),A),skS) and encrypt protocol nonces under attacker-controlled keys. The attacker then learns Na and/or Nb and uses them to decrypt the later sencrypt(secret..., nonce) outputs, which is why all four secrecy queries fail. The endAparam/endAfull trace also shows a second bug in the initiator: message 6 is decrypted with skA unconditionally instead of the role-selected key skxA, so a session started as xA = B can still accept a message encrypted for A, breaking correspondence.",
+    "patch_suggestion": "Apply two small fixes.\n\n1. Do not let processK register keys for the honest principals A and B:\nlet processK =\n    in(c, (h: host, k: pkey));\n    if h = A || h = B then 0 else\n    insert keys(h,k).\n\n2. Use the role-selected secret key instead of a hard-coded one:\n- In processInitiator, replace decrypt(m, skA) with decrypt(m, skxA).\n- In processResponder, replace decrypt(m3, skB) with decrypt(m3, skxB).\n\nThese are the minimal code changes directly tied to the observed attacks.",
+    "notes": "The diagram is representative, not exhaustive. The supplied traces clearly show the fake-key-registration attack and clearly show the initiator-side skA/skxA mistake in the endA* counterexample. A separate long trace exploiting the responder-side skB/skxB mistake was not explicitly shown, but that defect is present in the provided .pv file."
+  }
+}

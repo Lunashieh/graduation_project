@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_02",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T012537Z",
+  "usage": {
+    "input_tokens": 10391,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 3395,
+    "output_tokens_details": {
+      "reasoning_tokens": 2948
+    },
+    "total_tokens": 13786
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant Server\nparticipant Initiator\nparticipant Responder\nAttacker->>Server: request certs for (A,B)\nServer-->>Attacker: cert(A, spkA), cert(B, pkB)\nAttacker->>Server: request certs for (B,B)\nServer-->>Attacker: cert(B, spkB), cert(B, pkB)\nAttacker->>Initiator: start as A; send cert(A, spkA), cert(B, spkB)\nInitiator-->>Attacker: sign((A,B,k), sskA)\nInitiator-->>Attacker: sencrypt(secretA, k)\nAttacker->>Attacker: use getmess on signature to recover k\nAttacker->>Attacker: decrypt secretA with k\nAttacker->>Responder: start as B; send cert(A, spkA), cert(B, pkB), sign((A,B,k), sskA)\nResponder-->>Attacker: sencrypt(secretB, k)\nAttacker->>Attacker: decrypt secretB with k",
+    "explanation": "The failure comes from the signature model: `getmess(sign(m,k)) = m` lets anyone extract the signed payload. After the initiator outputs `sign((A,B,k),sskA)` (or `sign((B,B,k),sskB)`), the attacker learns the fresh session key `k`, decrypts `sencrypt(secretA,k)`, and can also replay the signed key material to the responder, which then returns `sencrypt(secretB,k)`.",
+    "patch_suggestion": "Remove the public message-extraction rule for signatures (`getmess(sign(m,k)) = m`) and do not send the session key only as a bare signature. Keep signature verification through `checksign`, and if the key must be transported, protect it for B (for example, encrypt the signed key message under B's public key).",
+    "notes": "The log also reports failed injective correspondences; the secrecy traces above are directly explained by the transparent-signature rule."
+  }
+}

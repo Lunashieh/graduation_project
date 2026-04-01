@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_02",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T122745Z",
+  "usage": {
+    "input_tokens": 2849,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4359,
+    "output_tokens_details": {
+      "reasoning_tokens": 4023
+    },
+    "total_tokens": 7208
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant Dev as User/Developer\n    participant PV as ProVerif\n    participant M as model.pv\n    Dev->>PV: Run verification on NeedhamSchroederPK_bug_02\n    PV->>M: Parse processInitiator\n    M-->>PV: line 138: let (_NaR: nonce, NX2: nonce, =hostX) = decrypt(m, skA) in\n    PV-->>Dev: Syntax error (line 138, chars 15-17)\n    Note over PV,M: Verification stops before secrecy/authentication queries are checked",
+    "explanation": "The failure is a parse-time syntax error, not a protocol attack. ProVerif stops in processInitiator at line 138 when parsing the pattern `let (_NaR: nonce, NX2: nonce, =hostX) = decrypt(m, skA) in`; the `_NaR` binder is rejected, so the model cannot be verified.",
+    "patch_suggestion": "Replace the invalid binder with a normal variable name, for example:\n`let (NaR: nonce, NX2: nonce, =hostX) = decrypt(m, skA) in`\nIf the first decrypted nonce is meant to be checked against the initiator's `Na`, use an equality pattern instead:\n`let (=Na, NX2: nonce, =hostX) = decrypt(m, skA) in`",
+    "notes": "The provided evidence only shows the parser error at line 138, so no secrecy or authentication violation can be concluded from this run."
+  }
+}

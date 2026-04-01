@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_03",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T013052Z",
+  "usage": {
+    "input_tokens": 9956,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 2159,
+    "output_tokens_details": {
+      "reasoning_tokens": 1543
+    },
+    "total_tokens": 12115
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant Server\nparticipant Initiator\nparticipant Responder\nalt secretA trace\nAttacker->>Initiator: start with xA = B\nAttacker->>Server: (B, B)\nServer->>Attacker: cert1 = sign((B, spkB), skS), cert2 = sign((B, pkB), skS)\nAttacker->>Initiator: cert1, cert2\nNote over Initiator: k = kdf(cert2)\nInitiator->>Attacker: encrypt(sign((B, B, k), sskB), pkB)\nInitiator->>Attacker: sencrypt(secretA, k)\nAttacker->>Attacker: compute k from public cert2\nAttacker->>Attacker: sdecrypt(sencrypt(secretA, k), k) = secretA\nelse secretB trace\nAttacker->>Initiator: start with xA = A\nAttacker->>Responder: start with xB = B\nAttacker->>Server: (A, B)\nServer->>Attacker: cert1 = sign((A, spkA), skS), cert2 = sign((B, pkB), skS)\nAttacker->>Initiator: cert1, cert2\nNote over Initiator: k = kdf(cert2)\nInitiator->>Attacker: km = encrypt(sign((A, B, k), sskA), pkB)\nAttacker->>Responder: cert1, cert2, km\nResponder->>Attacker: sencrypt(secretB, k)\nAttacker->>Attacker: compute k from public cert2\nAttacker->>Attacker: sdecrypt(sencrypt(secretB, k), k) = secretB\nend",
+    "explanation": "The failure comes from the initiator computing the session key as `kdf(cert2)`. The trace shows that `cert2` is a server-signed certificate sent on the public channel, so the attacker can obtain it and compute the same key. As a result, the attacker can decrypt `sencrypt(secretA, k)` directly, and can also obtain a valid `km` from an initiator run and forward it to the responder, then decrypt `sencrypt(secretB, k)` with that same publicly derivable key.",
+    "patch_suggestion": "Do not derive the session key from the public certificate `cert2`. A minimal fix is to replace `let k: key = kdf(cert2)` in the initiator with a fresh session key, e.g. `new k: key`, and keep sending `k` only inside the signed payload that is encrypted for the responder.",
+    "notes": "The provided results also report that the injective authentication queries fail while the corresponding non-injective ones hold. The secrecy traces already explicitly show the root cause: `k` is derived from public data."
+  }
+}

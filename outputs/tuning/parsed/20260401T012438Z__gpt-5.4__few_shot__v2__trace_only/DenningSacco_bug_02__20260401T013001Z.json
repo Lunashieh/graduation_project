@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_02",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T013001Z",
+  "usage": {
+    "input_tokens": 10504,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 2979,
+    "output_tokens_details": {
+      "reasoning_tokens": 2418
+    },
+    "total_tokens": 13483
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant Server\nparticipant Initiator\nparticipant Responder\n\nAttacker->>Server: (B, B)\nServer-->>Attacker: sign((B, spk(B)), skS), sign((B, pk(B)), skS)\nAttacker->>Initiator: xA = B\nAttacker->>Initiator: cert1, cert2\nInitiator-->>Attacker: cert1, cert2, sign((B, B, k), sskB)\nInitiator-->>Attacker: sencrypt(secretA, k)\nAttacker->>Attacker: recover k from sign((B, B, k), sskB)\nAttacker->>Attacker: decrypt sencrypt(secretA, k)\n\nAttacker->>Server: (A, B)\nServer-->>Attacker: sign((A, spk(A)), skS), sign((B, pk(B)), skS)\nAttacker->>Initiator: xA = A\nAttacker->>Initiator: server-signed certificates\nInitiator-->>Attacker: cert1, cert2, sign((A, B, k), sskA)\nAttacker->>Responder: xB = B\nAttacker->>Responder: sign((A, spk(A)), skS), sign((B, pk(B)), skS), sign((A, B, k), sskA)\nResponder-->>Attacker: sencrypt(secretB, k)\nAttacker->>Attacker: recover k from sign((A, B, k), sskA)\nAttacker->>Attacker: decrypt sencrypt(secretB, k)",
+    "explanation": "The trace shows that the initiator outputs a signed term that contains the fresh session key k on the public channel. The attacker then derives k from that signed message and uses it to decrypt the ciphertext carrying secretA. The same signed key message can also be replayed to the responder together with valid server-signed certificates, causing the responder to encrypt secretB under the same attacker-known k, so secretB is also disclosed.",
+    "patch_suggestion": "Do not send the fresh session key k in a public signature by itself. Instead, protect the key-carrying message for the intended responder using the certified encryption key from cert2, and let the responder decrypt it before checking the initiator's signature.",
+    "notes": "The log explicitly supports recovery of k from the signed key message and its reuse at the responder. One detailed trace line appears inconsistent about the exact second certificate fed to the initiator, so the diagram keeps certificate contents abstract where necessary."
+  }
+}

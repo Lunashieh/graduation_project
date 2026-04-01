@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_01",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T184418Z",
+  "usage": {
+    "input_tokens": 23453,
+    "input_tokens_details": {
+      "cached_tokens": 23296
+    },
+    "output_tokens": 4964,
+    "output_tokens_details": {
+      "reasoning_tokens": 4084
+    },
+    "total_tokens": 28417
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant A as A (initiator)\n    participant M as Attacker\n    participant B as B (responder)\n    participant K as processK / keys table\n    participant S as Server S\n\n    Note over M,K: Attacker registers a fake key for an honest name\n    M->>K: (B, pk(att))\n    M->>S: request cert for B\n    S-->>M: sign((pk(att), B), skS)\n\n    M->>A: start initiator with (A, B)\n    A->>M: (A, B)\n    M-->>A: sign((pk(att), B), skS)\n    A->>M: encrypt((Na, A), pk(att))\n    Note over M: decrypts with att key and learns Na\n\n    M->>B: start responder with xB = B\n    M->>B: encrypt((Na, A), pk(B))\n    B->>M: (B, A)\n    M->>S: request cert for A\n    S-->>M: sign((pk(A), A), skS)\n    M-->>B: sign((pk(A), A), skS)\n    B->>M: encrypt((Na, Nb, B), pk(A))\n    M-->>A: encrypt((Na, Nb, B), pk(A))\n    A->>M: encrypt(Nb, pk(att))\n    Note over M: decrypts and learns Nb\n    A->>M: sencrypt(secretANa, Na)\n    A->>M: sencrypt(secretANb, Nb)\n    Note over M: recovers both A-secrets\n\n    alt Responder-only run from trace\n        M->>K: (B, pk(att))\n        M->>S: request cert for B\n        S-->>M: sign((pk(att), B), skS)\n        M->>B: start responder with xB = B\n        M->>B: encrypt((NY, B), pk(B))\n        B->>M: (B, B)\n        M-->>B: sign((pk(att), B), skS)\n        B->>M: encrypt((NY, Nb2, B), pk(att))\n        Note over M: decrypts and learns Nb2\n        M-->>B: encrypt(Nb2, pk(B))\n        B->>M: sencrypt(secretBNa, NY)\n        B->>M: sencrypt(secretBNb, Nb2)\n        Note over M: recovers both B-secrets; endB* occurs without matching beginB*\n    end",
+    "explanation": "The failure is caused by the public-key registration path: processK lets the attacker insert keys for honest identities A and B, and processS then signs those attacker-controlled bindings. The traces show exactly this with insert keys(A,pk(a_14)) / keys(B,pk(a_9)) followed by signed certificates. Once the attacker gets a valid-looking cert for B or A, it can substitute its own key, decrypt protocol messages containing Na or Nb, and then decrypt the emitted sencrypt(secret..., nonce) values. This also enables responder completions with no matching honest peer run, so all correspondence queries fail.",
+    "patch_suggestion": "Prevent registration of keys for the honest principals. Minimal fix: remove processK for this model, or reject h = A and h = B before insert. For example: let processK = in(c,(h:host,k:pkey)); if h = A || h = B then 0 else insert keys(h,k). This stops the server from signing attacker-chosen keys for A/B.",
+    "notes": "The role code also contains suspicious fixed-key uses (initiator decrypts message 6 with skA instead of skxA; responder checks message 7 with skB instead of skxB). The provided traces are already explained by the key-table overwrite, which is the direct cause evidenced by the attacks."
+  }
+}

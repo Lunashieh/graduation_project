@@ -3,7 +3,7 @@ setlocal
 
 REM ====== 1) Project paths (edit if needed) ======
 set "ROOT=D:\graduation project\project_root"
-set "PROTOCOL=Yahalom"
+set "PROTOCOL=NeedhamSchroederPK"
 set "PROVERIF_EXE=D:\graduation project\proverif2.05\proverif.exe"
 set "MAKE_VERDICT=%ROOT%\scripts\make_verdict.py"
 

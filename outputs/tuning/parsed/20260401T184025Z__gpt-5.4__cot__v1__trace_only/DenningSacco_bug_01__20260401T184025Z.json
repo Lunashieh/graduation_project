@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_01",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T184025Z",
+  "usage": {
+    "input_tokens": 10226,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4417,
+    "output_tokens_details": {
+      "reasoning_tokens": 3505
+    },
+    "total_tokens": 14643
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\\n    participant Att as Attacker\\n    participant S as Server\\n    participant Init as Initiator (xA = B)\\n    participant Resp as Responder (xB = B)\\n\\n    rect rgb(255,245,245)\\n    Note over Att,Init: Trace 1: compromise of secretA\\n    Att->>S: request certs for (B, B)\\n    S-->>Att: sign((B, spk(B)), skS), sign((B, pk(B)), skS)\\n    Att->>Att: choose attacker key y\\n    Att->>Att: insert enc_keys(B, pk(y))\\n    Att->>S: request certs for (fakeHost, B)\\n    S-->>Att: sign((fakeHost, *), skS), sign((B, pk(y)), skS)\\n    Att->>Init: start with xA = B\\n    Att->>Init: cert1 = sign((B, spk(B)), skS), cert2 = sign((B, pk(y)), skS)\\n    Init-->>Att: encrypt(sign((B, B, k), sskB), pk(y))\\n    Init-->>Att: sencrypt(secretA, k)\\n    Att->>Att: decrypt first ciphertext with y, recover k, decrypt secretA\\n    end\\n\\n    rect rgb(245,245,255)\\n    Note over Att,Resp: Trace 2: compromise of secretB\\n    Att->>Att: choose attacker signing key a9 and session key a11\\n    Att->>Att: insert enc_keys(A, spk(a9))\\n    Att->>S: request certs that yield sign((A, spk(a9)), skS)\\n    S-->>Att: server-signed certificate for A with attacker-controlled key\\n    Att->>S: request certs that yield sign((B, pk(B)), skS)\\n    S-->>Att: server-signed certificate for B encryption key\\n    Note over Att,Resp: The certificate for A is reused as cert1\\n    Att->>Resp: start with xB = B\\n    Att->>Resp: cert1 = sign((A, spk(a9)), skS), cert2 = sign((B, pk(B)), skS), encrypt(sign((A, B, a11), a9), pk(B))\\n    Resp-->>Att: sencrypt(secretB, a11)\\n    Att->>Att: decrypt secretB with a11\\n    end",
+    "explanation": "The traces show that process_encK lets the attacker register enc_keys for honest names A and B. The server then signs these attacker-chosen bindings as if they were valid certificates. In the first trace, the initiator is driven with xA = B and receives a server-signed certificate binding B to the attacker's key, so the session key k is encrypted to the attacker and secretA is revealed. In the second trace, the attacker gets a server signature on an attacker-controlled key bound to A via enc_keys(A, ...), reuses that signed blob as cert1, forges the signed session key message accepted by the responder, and learns secretB. Thus the secrecy queries fail.",
+    "patch_suggestion": "Restrict encryption-key registration for honest hosts, exactly as already done for sign_keys. Change process_encK to reject A and B:\\n\\nlet process_encK =\\n  in(c, (h: host, pk: pkey));\\n  if h <> A && h <> B then insert enc_keys(h, pk).\\n\\nThis prevents the server from certifying attacker-controlled encryption keys for A/B, which is the direct cause used in both traces.",
+    "notes": "The secretB trace also relies on certificate format confusion: both cert1 and cert2 are just signatures over untagged pairs, so a server-signed encryption-key certificate can be reused where a signing-key certificate is expected. If further hardening is needed, add explicit tags or distinct constructors for the two certificate types."
+  }
+}

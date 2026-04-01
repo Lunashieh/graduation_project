@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_01",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T173836Z",
+  "usage": {
+    "input_tokens": 23478,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 5097,
+    "output_tokens_details": {
+      "reasoning_tokens": 4380
+    },
+    "total_tokens": 28575
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant M as Attacker\n    participant K as processK\n    participant S as Server\n    participant A as Initiator (xA=A)\n    participant B as Responder (xB=B)\n\n    M->>K: (B, pk(y))\n    Note right of K: insert keys(B, pk(y))\n\n    A->>M: (A, B)\n    M->>S: (a, B)\n    S-->>M: sign((pk(y), B), skS)\n    M-->>A: sign((pk(y), B), skS)\n\n    A-->>M: encrypt((Na, A), pk(y))\n    Note over M: decrypts with y and learns Na\n\n    M->>B: B\n    M->>B: encrypt((Na, A), pk(skB))\n    B->>M: (B, A)\n    M->>S: (a, A)\n    S-->>M: sign((pk(skA), A), skS)\n    M-->>B: sign((pk(skA), A), skS)\n\n    B-->>M: encrypt((Na, Nb, B), pk(skA))\n    M-->>A: encrypt((Na, Nb, B), pk(skA))\n    A-->>M: encrypt(Nb, pk(y))\n    Note over M: decrypts with y and learns Nb\n\n    A-->>M: sencrypt(secretANa, Na)\n    A-->>M: sencrypt(secretANb, Nb)",
+    "explanation": "All four secrecy queries and all four correspondence queries fail. The traces show that the attacker can use `processK` at input `{63}` / insert `{64}` to register attacker-controlled keys for the honest names `A` or `B`. The server then signs those table entries at `{60}`, so honest parties accept certificates such as `sign((pk(y),B),skS)` or `sign((pk(y),A),skS)`. Once a role encrypts a nonce under `pk(y)`, the attacker learns that nonce and can use it to complete the rest of the run. This is enough to recover `secretANa`, `secretANb`, `secretBNa`, and `secretBNb`, and it also lets `end...` events occur without the matching `begin...` events.",
+    "patch_suggestion": "Prevent `processK` from registering keys for the honest principals `A` and `B` (or remove `processK` entirely if only `A` and `B` are modeled). A minimal fix is:\n`let processK =\n    in(c, (h: host, k: pkey));\n    if h <> A && h <> B then insert keys(h,k).`\nThis directly blocks the forged certificates used in the traces.",
+    "notes": "The provided traces clearly support the forged-key registration problem through `processK`. The source also contains two hard-coded secret-key uses (`decrypt(m, skA)` in the initiator and `decrypt(m3, skB)` in the responder) that look suspicious and may also deserve review, but the supplied attacks already succeed via the fake certificate registrations."
+  }
+}

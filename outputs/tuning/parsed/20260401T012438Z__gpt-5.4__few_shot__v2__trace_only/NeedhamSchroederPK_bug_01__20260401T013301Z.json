@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_01",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T013301Z",
+  "usage": {
+    "input_tokens": 23710,
+    "input_tokens_details": {
+      "cached_tokens": 23552
+    },
+    "output_tokens": 2540,
+    "output_tokens_details": {
+      "reasoning_tokens": 1995
+    },
+    "total_tokens": 26250
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Initiator\nparticipant Responder\nparticipant Server\nparticipant KeyReg\nparticipant Attacker\nNote over Attacker,KeyReg: Attacker inserts an attacker-controlled public key for an honest host name (A or B)\nAttacker->>KeyReg: (A or B, pk(attacker))\nAttacker->>Server: request certificate for that host name\nServer->>Attacker: sign((pk(attacker), A or B), skS)\nInitiator->>Server: request peer certificate\nAttacker->>Initiator: signed certificate with pk(attacker)\nInitiator->>Attacker: encrypt((Na, xA), pk(attacker))\nAttacker->>Responder: encrypt((Na, A or B), pk(B))\nResponder->>Server: request certificate for peer\nServer->>Responder: signed certificate\nResponder->>Attacker: encrypt((Na, Nb, B), pk(attacker))\nAttacker->>Responder: encrypt(Nb, pk(B))\nInitiator->>Attacker: sencrypt(secretANa or secretANb, Na or Nb)\nResponder->>Attacker: sencrypt(secretBNa or secretBNb, Na or Nb)\nAttacker->>Attacker: decrypt learned Na or Nb and recover secrets",
+    "explanation": "The traces show that the attacker can use the unrestricted key-registration process to register attacker-controlled public keys for honest names A or B, then obtain server-signed certificates for those bindings. Honest parties then accept those certificates and encrypt protocol data to the attacker’s key, which lets the attacker recover Na or Nb and decrypt the reported secrets. The authentication queries also fail; in the code, the initiator decrypts message 6 with skA instead of the selected skxA, and the responder checks message 7 with skB instead of skxB, which is consistent with the endA/endB failures shown in the traces.",
+    "patch_suggestion": "Restrict or remove processK so the attacker cannot register or replace keys for honest hosts A and B. In addition, use the role-selected secret keys consistently: replace decrypt(m, skA) with decrypt(m, skxA) in the initiator and replace decrypt(m3, skB) with decrypt(m3, skxB) in the responder.",
+    "notes": "The evidence contains multiple attack traces. The diagram summarizes the common pattern conservatively: attacker-controlled key registration plus server-signed certificates lead to disclosure of Na or Nb and then the protected secrets. Different traces bind the attacker key to A or to B."
+  }
+}

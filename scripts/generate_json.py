@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 
-# Root directory of your modified dataset
+# Root directory of our modified dataset
 ROOT_DIR = Path("data_modified")
 
 # Output JSON file

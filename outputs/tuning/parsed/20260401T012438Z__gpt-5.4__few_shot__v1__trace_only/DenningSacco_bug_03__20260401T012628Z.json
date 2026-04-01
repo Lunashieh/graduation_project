@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_03",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T012628Z",
+  "usage": {
+    "input_tokens": 9843,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 950,
+    "output_tokens_details": {
+      "reasoning_tokens": 516
+    },
+    "total_tokens": 10793
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant Server\nparticipant Initiator\nparticipant Responder\nAttacker->>Server: request certificates for (A,B) or (B,B)\nServer->>Attacker: cert1 = sign((initiator, spkI), skS), cert2 = sign((B, pkB), skS)\nAttacker->>Initiator: start session with chosen identity and send (cert1, cert2)\nInitiator->>Attacker: (cert1, cert2, encrypt(sign((initiator, B, k), sskI), pkB))\nInitiator->>Attacker: sencrypt(secretA, k)\nAttacker->>Attacker: compute k = kdf(cert2)\nAttacker->>Attacker: decrypt secretA\nAttacker->>Responder: start as B and forward (cert1, cert2, km)\nResponder->>Attacker: sencrypt(secretB, k)\nAttacker->>Attacker: decrypt secretB with k",
+    "explanation": "The failure is caused by deriving the session key as k = kdf(cert2). Since cert2 is a public server-signed certificate sent on the network, the attacker can compute the same k. The traces show the attacker obtaining cert2 for B, deriving k from it, and then decrypting both sencrypt(secretA, k) and sencrypt(secretB, k). This also explains the non-injective authentication results: the key is not fresh per session.",
+    "patch_suggestion": "Do not derive the session key from the public certificate cert2. In processInitiator, replace \"let k: key = kdf(cert2)\" with a fresh key generation such as \"new k: key\", and keep sending k only inside the signed payload encrypted under pk2 so that only the intended responder learns it.",
+    "notes": "The trace evidence directly supports the secrecy break for both secretA and secretB. The injective correspondence failures are consistent with the same deterministic, publicly computable key being reused across sessions."
+  }
+}

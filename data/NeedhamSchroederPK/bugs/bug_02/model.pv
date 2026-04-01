@@ -135,7 +135,7 @@ let processInitiator(pkS: spkey, skA: skey, skB: skey) =
         out(c, encrypt((Na, xA), pkX));
         (* Message 6 *)
         in(c, m: bitstring); 
-        let (=Na, NX2: nonce, =hostX) = decrypt(m, skA) in
+        let (_NaR: nonce, NX2: nonce, =hostX) = decrypt(m, skA) in
 	event beginBfull(xA, hostX, pkX, pkxA, Na, NX2);
 	(* Message 7 *)
         out(c, encrypt(nonce_to_bitstring(NX2), pkX));
@@ -191,7 +191,7 @@ let processS(skS: sskey) =
 
 let processK =
         in(c, (h: host, k: pkey));
-        insert keys(h,k).
+        if h <> A && h <> B then insert keys(h,k).
 
 (* Start process *)
 
@@ -211,7 +211,8 @@ process new skA: skey;
           (!processInitiator(pkS, skA, skB)) | 
           (* Launch an unbounded number of sessions of the responder *)
           (!processResponder(pkS, skA, skB)) |
-          (* Launch an unbounded number of sessions of the server *)
+          (* Launch an unboulet (=Na, NX2: nonce, =hostX) = decrypt(m, skA) in
+		  nded number of sessions of the server *)
           (!processS(skS)) |
           (* Key registration process *)
 	  (!processK)

@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_03",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T185528Z",
+  "usage": {
+    "input_tokens": 9714,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 2177,
+    "output_tokens_details": {
+      "reasoning_tokens": 1344
+    },
+    "total_tokens": 11891
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant Adv as Attacker\n    participant S as Server\n    participant I as Initiator copy\n    participant R as Responder copy\n\n    rect rgb(245,245,245)\n    Note over Adv,I: Trace 1: secretA leak\n    Adv->>I: xA = B\n    Adv->>S: (B, B)\n    S-->>Adv: cert1 = sign((B, spkB), skS), cert2 = sign((B, pkB), skS)\n    Adv->>I: (cert1, cert2)\n    Note over I: k = kdf(cert2)\n    I-->>Adv: (cert1, cert2, encrypt(sign((B, B, k), sskB), pkB))\n    I-->>Adv: sencrypt(secretA, k)\n    Note over Adv: cert2 is public, so Adv computes k = kdf(cert2) and decrypts secretA\n    end\n\n    rect rgb(245,245,245)\n    Note over Adv,R: Trace 2: secretB leak\n    Adv->>I: xA = A\n    Adv->>R: xB = B\n    Adv->>S: (A, B)\n    S-->>Adv: cert1 = sign((A, spkA), skS), cert2 = sign((B, pkB), skS)\n    Adv->>I: (cert1, cert2)\n    Note over I: k = kdf(cert2)\n    I-->>Adv: (cert1, cert2, km = encrypt(sign((A, B, k), sskA), pkB))\n    Adv->>R: (cert1, cert2, km)\n    R-->>Adv: sencrypt(secretB, k)\n    Note over Adv: Adv again computes k from public cert2 and decrypts secretB\n    end",
+    "explanation": "The failure comes from the initiator computing the session key as `let k: key = kdf(cert2)`. In the traces, `cert2` is the server-signed certificate for the responder encryption key, for example `sign((B,pkB),skS)`. That certificate is sent on the public channel and is directly available to the attacker, so the attacker can also compute `kdf(cert2)`.\n\nOnce the attacker knows `k`, secrecy collapses in both directions shown by ProVerif: the initiator sends `sencrypt(secretA,k)` when `h2 = B`, and the responder sends `sencrypt(secretB,k)` after accepting the signed/encrypted key message. Since `k` is publicly derivable, both `secretA` and `secretB` are decrypted by the attacker.",
+    "patch_suggestion": "Make the session key fresh instead of deriving it from the public certificate.\n\nMinimal local change in `processInitiator`:\n- replace `let k: key = kdf(cert2) in`\n- with `new k: key;`\n\nSo that part becomes:\n`event beginBparam(xA, h2);`\n`new k: key;`\n`event beginBkey(xA, h2, k);`\n`out(c, (cert1, cert2, encrypt(sign((xA, h2, k), sskA), pk2)));`\n\nThis is minimal and directly addresses the trace: `k` is already conveyed to the responder inside the signed payload encrypted under `pk2`, so no larger protocol rewrite is needed for this secrecy bug.",
+    "notes": "The embedded `EXPECTPV` block does not match the provided ProVerif run. This analysis follows the actual trace/log evidence, which shows both secrecy queries are false. The identifier-rebinding warnings do not appear to be the cause of the attack shown here."
+  }
+}

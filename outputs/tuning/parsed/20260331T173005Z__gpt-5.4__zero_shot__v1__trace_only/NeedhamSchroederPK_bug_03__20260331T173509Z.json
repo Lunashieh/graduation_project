@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_03",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T173509Z",
+  "usage": {
+    "input_tokens": 11491,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 1522,
+    "output_tokens_details": {
+      "reasoning_tokens": 1034
+    },
+    "total_tokens": 13013
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant I as Attacker\n    participant B as Responder xB=B\n    participant S as Server\n\n    I->>B: start responder with xB = B\n    I->>B: {y, B}_pkB\n    Note over B: decrypts message 3 as (NY=y, hostY=B)\\nbeginAparam(B,B)\n    B->>S: (B, B)\n    S->>B: sign((pkB, B), skS)\n    Note over B: accepts certificate for hostY = B\n    B->>I: {y, Nb, B}_pkB\n    I->>B: {y}_pkB\n    Note over B: buggy check compares decrypted message 7 with NY=y\\ninstead of Nb\n    Note over B: endBparam(B,B), endBfull(B,B,pkB,pkB,y,Nb)\n    B->>I: sencrypt(secretBNa, y)\n    Note over I: since y was attacker-chosen, attacker decrypts and learns secretBNa",
+    "explanation": "The responder accepts message 7 if it decrypts to NY (the nonce received in message 3) instead of Nb (the fresh challenge it generated). In the trace, the attacker chooses NY=y, sends {y,B}_pkB, obtains B's reply {y,Nb,B}_pkB, and then returns {y}_pkB. Because pkB is public, this forged final message passes the buggy test, so B executes endBparam/endBfull without any matching initiator run and leaks secretBNa encrypted under attacker-known y.",
+    "patch_suggestion": "Fix the responder's final check to validate the responder's fresh nonce and use the role-dependent secret key:\nreplace\nif nonce_to_bitstring(NY) = decrypt(m3, skB) then\nwith\nif nonce_to_bitstring(Nb) = decrypt(m3, skxB) then",
+    "notes": "The provided trace shows the attack on the B role specifically (xB=B, hostY=B). The same line also uses skB instead of skxB; that is not needed for this concrete trace, but correcting it is the right minimal code change at the vulnerable check."
+  }
+}

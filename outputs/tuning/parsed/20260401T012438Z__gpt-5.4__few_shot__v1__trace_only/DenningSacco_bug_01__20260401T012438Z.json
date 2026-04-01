@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_01",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T012438Z",
+  "usage": {
+    "input_tokens": 10370,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 3172,
+    "output_tokens_details": {
+      "reasoning_tokens": 2511
+    },
+    "total_tokens": 13542
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant Server\nparticipant I as Initiator(B)\nparticipant R as Responder(B)\nAttacker->>Server: request certs for (B,B)\nServer-->>Attacker: certSign(B, spkB), certEnc(B, pkB)\nAttacker->>Server: register enc_keys(B, pk(attacker))\nAttacker->>Server: request certs for (x,B)\nServer-->>Attacker: certSign(x, pk1), certEnc(B, pk(attacker))\nAttacker->>I: start initiator with xA = B\nAttacker->>I: certSign(B, spkB), certEnc(B, pk(attacker))\nI-->>Attacker: certSign(B, spkB), certEnc(B, pk(attacker)), encrypt(sign(B,B,k), pk(attacker))\nI-->>Attacker: sencrypt(secretA, k)\nAttacker->>Attacker: decrypt km and recover k\nAttacker->>Attacker: decrypt secretA\nalt Second trace against responder\nAttacker->>Server: register enc_keys(A, spk(attacker))\nAttacker->>Server: request certs for (x,A)\nServer-->>Attacker: certX, certForA(spk(attacker))\nAttacker->>R: start responder with xB = B\nAttacker->>R: certForA(spk(attacker)), certEnc(B, pkB), encrypt(sign(A,B,k2), pkB)\nR-->>Attacker: sencrypt(secretB, k2)\nAttacker->>Attacker: decrypt secretB\nend",
+    "explanation": "The main flaw is that `process_encK` accepts attacker-chosen encryption keys for any host, including honest names `A` and `B`. The server then certifies these fake bindings. In the `secretA` trace, the initiator runs as `B` and encrypts the session key under the attacker’s public key, so the attacker learns `k` and decrypts `secretA`. In the `secretB` trace, a server-signed key certificate for `A` is reused to satisfy the responder’s expected certificate format, allowing the attacker to forge the signed `(A,B,k)` payload and obtain `secretB`.",
+    "patch_suggestion": "Restrict encryption-key registration for honest principals, mirroring `process_signK`: change `process_encK` to insert only when `h <> A && h <> B`. For example: `let process_encK = in(c,(h:host, pk:pkey)); if h <> A && h <> B then insert enc_keys(h, pk).` This prevents the attacker from getting server-signed fake key bindings for `A` or `B`, which are the basis of both attacks.",
+    "notes": "The `secretB` trace also shows certificate confusion: the model uses the same untagged server signature format for both signing-key and encryption-key certificates, so a signed encryption-key certificate can be parsed as if it were a signing-key certificate."
+  }
+}

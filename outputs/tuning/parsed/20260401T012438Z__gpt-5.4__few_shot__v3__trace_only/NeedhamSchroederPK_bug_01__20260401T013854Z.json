@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_01",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T013854Z",
+  "usage": {
+    "input_tokens": 23771,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 2815,
+    "output_tokens_details": {
+      "reasoning_tokens": 2300
+    },
+    "total_tokens": 26586
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant Server\nparticipant Initiator\nparticipant Responder\nAttacker->>Server: register (A, pk_attacker)\nInitiator->>Server: request certificate for B\nServer->>Initiator: sign((pkB, B), skS)\nInitiator->>Responder: encrypt((Na, A), pkB)\nResponder->>Server: request certificate for A\nServer->>Responder: sign((pk_attacker, A), skS)\nResponder->>Attacker: encrypt((Na, Nb, B), pk_attacker)\nAttacker->>Attacker: decrypt and learn Na, Nb\nAttacker->>Initiator: forward encrypt((Na, Nb, B), pkA)\nInitiator->>Attacker: sencrypt(secretANa, Na)\nInitiator->>Attacker: sencrypt(secretANb, Nb)\nAttacker->>Attacker: decrypt protected secrets",
+    "explanation": "The failure is caused by the public-key directory being writable by the attacker for honest names A and B. In the trace, the attacker inserts keys such as (A, pk(attacker)) or (B, pk(attacker)) through processK, and the server later signs these attacker-controlled bindings. Once an honest party accepts such a signed certificate, protocol messages are encrypted to the attacker's key instead of the real peer's key. The attacker then learns Na or Nb, can complete or fake the run, and finally decrypts the secrets protected under those nonces. This also explains the broken authentication queries: parties finish runs based on attacker-certified wrong keys, not on a genuine peer session.",
+    "patch_suggestion": "Make key registration reject the reserved honest identities A and B, since their correct keys are already inserted at startup. A minimal local fix is to change processK so it only inserts keys for other hosts, for example: let processK = in(c, (h: host, k: pkey)); if h <> A && h <> B then insert keys(h,k). This preserves the existing protocol structure while preventing the attacker from obtaining server-signed fake certificates for A or B.",
+    "notes": "The traces are fully explained by the writable key table. Separately, the code also uses skA instead of skxA in the initiator and skB instead of skxB in the responder; those lines are worth reviewing, but they are not needed to explain the concrete attacks shown here."
+  }
+}

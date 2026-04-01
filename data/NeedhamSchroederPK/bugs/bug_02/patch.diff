@@ -1,11 +1,22 @@
 正在比较文件 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BASELINE\model.pv 和 D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BUGS\BUG_02\MODEL.PV
 ***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BASELINE\model.pv
-  193:          in(c, (h: host, k: pkey));
-  194:          if h <> A && h <> B then insert keys(h,k).
-  195:  
+  137:          in(c, m: bitstring); 
+  138:          let (=Na, NX2: nonce, =hostX) = decrypt(m, skA) in
+  139:          event beginBfull(xA, hostX, pkX, pkxA, Na, NX2);
 ***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BUGS\BUG_02\MODEL.PV
-  193:          in(c, (h: host, k: pkey));
-  194:          insert keys(h,k).
-  195:  
+  137:          in(c, m: bitstring); 
+  138:          let (_NaR: nonce, NX2: nonce, =hostX) = decrypt(m, skA) in
+  139:          event beginBfull(xA, hostX, pkX, pkxA, Na, NX2);
+*****
+
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BASELINE\model.pv
+  213:            (!processResponder(pkS, skA, skB)) |
+  214:            (* Launch an unbounded number of sessions of the server *)
+  215:            (!processS(skS)) |
+***** D:\GRADUATION PROJECT\PROJECT_ROOT\DATA\NEEDHAMSCHROEDERPK\BUGS\BUG_02\MODEL.PV
+  213:            (!processResponder(pkS, skA, skB)) |
+  214:            (* Launch an unboulet (=Na, NX2: nonce, =hostX) = decrypt(m, skA) in
+  215:                    nded number of sessions of the server *)
+  216:            (!processS(skS)) |
 *****
 

@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_02",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T123300Z",
+  "usage": {
+    "input_tokens": 3225,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 5263,
+    "output_tokens_details": {
+      "reasoning_tokens": 4954
+    },
+    "total_tokens": 8488
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Model\nparticipant ProVerif\nModel->>ProVerif: Load NeedhamSchroederPK_bug_02.pv\nNote over Model,ProVerif: Parsing fails before any protocol run is analyzed\nProVerif-->>Model: Syntax error at line 138, characters 15-17",
+    "explanation": "This case does not show a protocol attack trace. ProVerif stops at parsing with a syntax error, so the Needham-Schroeder PK model is never analyzed. The file visibly contains a corrupted inserted fragment near the process-launch section for the server (the comment beginning \"Launch an unboulet ...\"), which is consistent with accidental text corruption in the .pv file rather than a cryptographic flaw demonstrated by the log.",
+    "patch_suggestion": "Apply a purely local syntax cleanup: remove the stray injected text near the server-launch comment and restore that block to a normal comment, e.g. replace the corrupted two-line comment before `(!processS(skS)) |` with `(* Launch an unbounded number of sessions of the server *)`. This is the minimal fix supported by the evidence because ProVerif currently fails before verification begins.",
+    "notes": "The provided evidence only confirms a parse failure, not a secrecy or authentication violation. If parsing still fails after restoring the corrupted comment block, re-check the nearby initiator code around line 138, since ProVerif's reported location may be slightly downstream from the actual malformed text."
+  }
+}

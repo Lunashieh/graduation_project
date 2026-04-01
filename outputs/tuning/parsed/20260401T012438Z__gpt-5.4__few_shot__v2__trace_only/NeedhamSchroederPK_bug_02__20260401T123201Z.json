@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_02",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T123201Z",
+  "usage": {
+    "input_tokens": 3164,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4498,
+    "output_tokens_details": {
+      "reasoning_tokens": 4246
+    },
+    "total_tokens": 7662
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant ProVerif\nparticipant Model as model.pv\nProVerif->>Model: Parse specification\nNote over ProVerif,Model: Syntax error reported at line 138, characters 15-17\nNote over ProVerif,Model: Verification stops before any protocol trace or query result is produced",
+    "explanation": "The provided evidence shows a parsing failure, not a protocol attack trace. ProVerif stops with a syntax error at line 138, characters 15-17, so the model is not verified and none of the secrecy or authentication queries are actually checked.",
+    "patch_suggestion": "Fix the syntax at the reported location so the file parses. In the shown code, the initiator-side pattern `let (_NaR: nonce, NX2: nonce, =hostX) = decrypt(m, skA) in` is the likely place to correct; a minimal change is to replace `_NaR` with a regular variable name such as `NaR`.",
+    "notes": "Because ProVerif fails during parsing, there is no execution trace or security-counterexample evidence to analyze. The patch suggestion is therefore limited to the syntax issue indicated by the error location."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_02",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T185424Z",
+  "usage": {
+    "input_tokens": 10262,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4380,
+    "output_tokens_details": {
+      "reasoning_tokens": 3436
+    },
+    "total_tokens": 14642
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    actor Adv as Attacker\n    participant S as Server\n    participant I as Initiator role\n    participant R as Responder role\n\n    alt Trace breaking secretA\n        Adv->>S: (B, B)\n        S-->>Adv: cert1 = sign((B, spkB), skS), cert2 = sign((B, pkB), skS)\n        Adv->>I: xA = B\n        Adv->>I: (cert1, cert2)\n        I->>I: checksign(cert1, pkS) = (B, spkB)\n        I->>I: checksign(cert2, pkS) = (B, pkB)\n        I-->>Adv: (cert1, cert2, sign((B, B, k), sskB))\n        I-->>Adv: sencrypt(secretA, k)\n        Adv->>Adv: getmess(sign((B, B, k), sskB))\n        Adv->>Adv: recover k and decrypt secretA\n    else Trace breaking secretB\n        Adv->>S: (A, B)\n        S-->>Adv: certA = sign((A, spkA), skS), certB = sign((B, pkB), skS)\n        Adv->>I: xA = A\n        Adv->>I: (certA, certB)\n        I-->>Adv: (certA, certB, sign((A, B, k), sskA))\n        I-->>Adv: sencrypt(secretA, k)\n        Adv->>Adv: getmess(sign((A, B, k), sskA))\n        Adv->>Adv: recover k\n        Adv->>R: xB = B\n        Adv->>R: (certA, certB, sign((A, B, k), sskA))\n        R->>R: checksign(certA, pkS) = (A, spkA)\n        R->>R: checksign(certB, pkS) = (B, pkB)\n        R->>R: checksign(sign((A, B, k), sskA), spkA)\n        R-->>Adv: sencrypt(secretB, k)\n        Adv->>Adv: decrypt secretB with k\n    end",
+    "explanation": "Both secrecy queries fail because the session key k is sent only inside a signature: sign((xA,h2,k),sskA). In this model, signatures are publicly readable via getmess(sign(m,k)) = m, so the attacker can extract k from the signed message. Once k is known, the attacker decrypts sencrypt(secretA,k) directly, and can also replay the signed tuple to the responder to make it send sencrypt(secretB,k), which is then decryptable too. The trace also shows that the initiator reads pk2 from cert2 but does not use it to protect km, so B's encryption key certificate is effectively ignored.",
+    "patch_suggestion": "Make the signed key message confidential by encrypting it for the responder with pk2, and decrypt it on the responder side before checking the signature.\n\nMinimal local change:\n- In processInitiator, replace:\n  out(c, (cert1, cert2, sign((xA, h2, k), sskA)));\n  with:\n  out(c, (cert1, cert2, encrypt(sign((xA, h2, k), sskA), pk2)));\n\n- In processResponder, replace:\n  let ks = km in\n  let (=h1, =xB, k: key) = checksign(ks, pk1) in\n  with:\n  let ks = decrypt(km, skB) in\n  let (=h1, =xB, k: key) = checksign(ks, pk1) in\n\nThis is the smallest patch supported by the trace: it keeps the protocol structure, but stops the attacker from learning k from the signed message.",
+    "notes": "The supplied trace shows secrecy failures, even though the EXPECTPV comment in the file says secrecy should hold. The identifier-rebinding warnings do not appear to be the main cause of the attack; the trace points to the unencrypted signed session key as the decisive issue."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_02",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T173647Z",
+  "usage": {
+    "input_tokens": 10272,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4051,
+    "output_tokens_details": {
+      "reasoning_tokens": 3207
+    },
+    "total_tokens": 14323
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nactor Attacker\nparticipant S as Server\nparticipant I as Initiator\nparticipant R as Responder\n\nalt Attack on secretA\n    Attacker->>S: (B, B)\n    S-->>Attacker: sign((B, spkB), skS), sign((B, pkB), skS)\n    Attacker->>I: xA = B\n    Attacker->>I: cert1 = sign((B, spkB), skS), cert2 = sign((B, pkB), skS)\n    I->>Attacker: cert1, cert2, sign((B, B, k), sskB)\n    I->>Attacker: sencrypt(secretA, k)\n    Note over Attacker: By getmess(sign(m,k)) = m, attacker extracts (B,B,k) and learns k\n    Attacker->>Attacker: sdecrypt(sencrypt(secretA,k), k)\nelse Attack on secretB\n    Attacker->>S: (A, B)\n    S-->>Attacker: sign((A, spkA), skS), sign((B, pkB), skS)\n    Attacker->>S: (B, B)\n    S-->>Attacker: sign((B, spkB), skS), sign((B, pkB), skS)\n    Attacker->>I: xA = A\n    Attacker->>I: sign((A, spkA), skS), sign((B, spkB), skS)\n    I->>Attacker: sign((A, spkA), skS), sign((B, spkB), skS), sign((A, B, k), sskA)\n    Note over Attacker: By getmess(sign(m,k)) = m, attacker extracts (A,B,k) and learns k\n    Attacker->>R: xB = B\n    Attacker->>R: sign((A, spkA), skS), sign((B, pkB), skS), sign((A, B, k), sskA)\n    R->>Attacker: sencrypt(secretB, k)\n    Attacker->>Attacker: sdecrypt(sencrypt(secretB,k), k)\nend",
+    "explanation": "Both secrecy queries fail because the session key k is sent inside a signature on the public channel. In this model, signatures are readable via the reduction getmess(sign(m,k)) = m, and the trace explicitly shows the attacker extracting (B,B,k) or (A,B,k) from the signed message, then using k to decrypt sencrypt(secretA,k) or sencrypt(secretB,k). The code also shows that the initiator learns pk2 from cert2 but does not use it to protect the signed key message, and the responder accepts km without first decrypting it.",
+    "patch_suggestion": "Protect the signed session-key message with the responder's encryption key before sending it. Minimal change:\n- In processInitiator, replace\n  out(c, (cert1, cert2, sign((xA, h2, k), sskA)))\n  with\n  out(c, (cert1, cert2, encrypt(sign((xA, h2, k), sskA), pk2)))\n- In processResponder, replace\n  let ks = km in\n  with\n  let ks = decrypt(km, skB) in\nso the responder verifies the signature only after decrypting. This directly blocks the trace where the attacker reads k from the signature.",
+    "notes": "The traces fully support the key-leak attack above. The secretB trace also shows the initiator accepting as its second certificate a server signature over B's signature key rather than B's encryption key; this may indicate an additional modeling/type-discipline weakness, but secrecy already fails in the secretA trace without relying on that ambiguity."
+  }
+}

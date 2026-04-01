@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_01",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T173005Z",
+  "usage": {
+    "input_tokens": 10168,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4173,
+    "output_tokens_details": {
+      "reasoning_tokens": 3466
+    },
+    "total_tokens": 14341
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    actor Att as Attacker\n    participant EK as process_encK\n    participant S as Server\n    participant Init as Initiator(xA = B)\n    participant Resp as Responder(xB = B)\n\n    alt Leak of secretA\n        Att->>S: request certs for (B, B)\n        S-->>Att: certSignB = sign((B, spkB), skS)\\ncertEncB = sign((B, pkB), skS)\n        Att->>EK: register enc_keys(B, pk(att_sk))\n        Att->>S: request certs for (dummy, B)\n        S-->>Att: dummy cert\\ncertEncB* = sign((B, pk(att_sk)), skS)\n        Att->>Init: start session with xA = B\n        Att->>Init: certSignB, certEncB*\n        Init-->>Att: encrypt(sign((B, B, k), sskB), pk(att_sk))\n        Init-->>Att: sencrypt(secretA, k)\n        Att->>Att: decrypt first message, recover k, then decrypt secretA\n    else Leak of secretB\n        Att->>EK: register enc_keys(A, spk(att_ssk))\n        Att->>S: request certs for (dummy, A)\n        S-->>Att: dummy cert\\ncertA* = sign((A, spk(att_ssk)), skS)\n        Att->>S: request certs for (dummy, B)\n        S-->>Att: dummy cert\\ncertEncB = sign((B, pkB), skS)\n        Att->>Resp: start session with xB = B\n        Att->>Resp: certA* as cert1, certEncB as cert2,\\nencrypt(sign((A, B, k), att_ssk), pkB)\n        Resp-->>Att: sencrypt(secretB, k)\n        Att->>Att: use known k to decrypt secretB\n    end",
+    "explanation": "The main bug is that process_encK accepts attacker-chosen encryption keys for any host, including honest A and B. The server then signs these attacker-controlled bindings as valid certificates. In the trace for secretA, the initiator encrypts the fresh session key to an attacker key certified for B, so the attacker recovers k and decrypts secretA. In the trace for secretB, the attacker obtains a server-signed certificate for A containing an attacker verification key and reuses it to make the responder accept a forged signed session key, leaking secretB.",
+    "patch_suggestion": "Restrict encryption-key registration for honest principals, analogously to process_signK:\nlet process_encK =\n    in(c, (h: host, pk: pkey));\n    if h <> A && h <> B then insert enc_keys(h, pk).\nThis directly removes the attacker-controlled A/B key bindings used in both attacks.",
+    "notes": "The secretB trace also shows certificate-type confusion: certificates are just signed pairs, so an encryption-key certificate can be replayed where a signing-key certificate is expected. Adding explicit tags for sign-key vs enc-key certificates would harden the model further."
+  }
+}

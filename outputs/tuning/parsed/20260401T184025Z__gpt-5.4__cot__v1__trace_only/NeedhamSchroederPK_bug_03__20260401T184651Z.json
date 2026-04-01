@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_03",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T184651Z",
+  "usage": {
+    "input_tokens": 11549,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 1508,
+    "output_tokens_details": {
+      "reasoning_tokens": 1034
+    },
+    "total_tokens": 13057
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant I as Attacker\n    participant B as Responder B\n    participant S as Server S\n\n    I->>B: start responder with xB = B\n    I->>B: encrypt((NY,B), pkB)\n    Note over B: beginAparam(B,B)\n    B->>S: (B,B)\n    S-->>B: sign((pkB,B), skS)\n    Note over B: beginAfull(B,B,pkB,pkB,NY,Nb)\n    B-->>I: encrypt((NY,Nb,B), pkB)\n    I->>B: encrypt(NY, pkB)\n    Note over B: Check passes because code tests returned NY\n    Note over B: endBparam(B,B) and endBfull(B,B,pkB,pkB,NY,Nb)\n    B-->>I: sencrypt(secretBNa, NY)\n    I->>I: sdecrypt(sencrypt(secretBNa,NY), NY) = secretBNa",
+    "explanation": "The responder accepts a session completed only by the attacker. In the trace, the attacker starts B as responder, chooses NY, obtains B's own certificate from S, and answers the final challenge with encrypt(NY, pkB). This succeeds because the responder checks message 7 against NY instead of the fresh responder nonce Nb. As a result, endBparam/endBfull occur without any matching initiator beginBparam/beginBfull, and secretBNa is leaked since it is later protected with the attacker-chosen NY.",
+    "patch_suggestion": "In processResponder, fix the final verification to require the responder's nonce Nb (and use the responder's actual secret key variable): replace `if nonce_to_bitstring(NY) = decrypt(m3, skB) then` with `if nonce_to_bitstring(Nb) = decrypt(m3, skxB) then`. This makes message 7 prove knowledge of Nb, which the attacker does not learn from the trace.",
+    "notes": "The evidence directly shows failures for `secretBNa`, `endBparam`, and `endBfull`; the initiator-side queries remain true in this run."
+  }
+}

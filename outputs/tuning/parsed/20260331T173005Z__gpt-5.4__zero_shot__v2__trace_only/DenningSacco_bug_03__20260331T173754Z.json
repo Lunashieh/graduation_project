@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_03",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T173754Z",
+  "usage": {
+    "input_tokens": 9724,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 2074,
+    "output_tokens_details": {
+      "reasoning_tokens": 1329
+    },
+    "total_tokens": 11798
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant Adv as Attacker\n    participant S as Server\n    participant I as Initiator\n    participant R as Responder\n\n    alt Trace leading to secretA\n        Adv->>S: (B, B)\n        S-->>Adv: cert1 = sign((B, spkB), skS), cert2 = sign((B, pkB), skS)\n        Adv->>I: xA = B\n        Adv->>I: (cert1, cert2)\n        Note over I: k := kdf(cert2)\n        I-->>Adv: (cert1, cert2, encrypt(sign((B, B, k), sskB), pkB))\n        I-->>Adv: sencrypt(secretA, k)\n        Note over Adv: cert2 is known, so Adv computes k = kdf(cert2)\n        Note over Adv: Adv decrypts sencrypt(secretA, k)\n    else Trace leading to secretB\n        Adv->>S: (A, B)\n        S-->>Adv: cert1 = sign((A, spkA), skS), cert2 = sign((B, pkB), skS)\n        Adv->>I: xA = A\n        Adv->>I: (cert1, cert2)\n        Note over I: k := kdf(cert2)\n        I-->>Adv: (cert1, cert2, encrypt(sign((A, B, k), sskA), pkB))\n        Adv->>R: xB = B\n        Adv->>R: (cert1, cert2, encrypt(sign((A, B, k), sskA), pkB))\n        R-->>Adv: sencrypt(secretB, k)\n        Note over Adv: cert2 is known, so Adv computes k = kdf(cert2)\n        Note over Adv: Adv decrypts sencrypt(secretB, k)\n    end",
+    "explanation": "The evidence shows both secrecy queries fail: ProVerif derives attacker(secretA) and attacker(secretB). The common cause is that the session key is computed as `k = kdf(cert2)` in the initiator, while `cert2` is a server-signed certificate that the attacker can obtain on the public channel from `processS`. Since `kdf` is public, the attacker can compute the same `k` from the observed `cert2`. Then any `sencrypt(..., k)` output is decryptable by the attacker. The long traces show this explicitly for `secretA` and `secretB`.",
+    "patch_suggestion": "Make the session key fresh instead of deriving it from the public certificate. Minimal change in `processInitiator`:\n\nReplace\n`let k: key = kdf(cert2) in`\nwith\n`new k: key;`\n\nand keep the rest of the message flow the same, since `k` is already carried inside `sign((xA, h2, k), sskA)` and then encrypted for the responder. This directly removes the attacker’s ability to compute `k` from public `cert2`.",
+    "notes": "The diagram abstracts server table lookups and uses role names rather than the exact replicated process copy names from the trace. The provided traces directly evidence the secrecy breaks; the non-injective authentication failures reported in EXPECTPV are consistent with replay/reuse, but the explanation above stays focused on the shown secrecy attacks."
+  }
+}

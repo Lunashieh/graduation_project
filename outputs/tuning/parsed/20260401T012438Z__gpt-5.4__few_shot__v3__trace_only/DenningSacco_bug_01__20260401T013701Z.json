@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_01",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T013701Z",
+  "usage": {
+    "input_tokens": 10544,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 3420,
+    "output_tokens_details": {
+      "reasoning_tokens": 2839
+    },
+    "total_tokens": 13964
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant EncKeyReg\nparticipant Server\nparticipant Initiator\nparticipant Responder\nAttacker->>EncKeyReg: insert enc_keys(B, pk(attacker))\nAttacker->>Server: request certs for (B, B)\nServer-->>Attacker: sign((B, spkB), skS), sign((B, pk(attacker)), skS)\nAttacker->>Initiator: start as xA = B; send cert1, cert2\nInitiator->>Attacker: encrypt(sign((B, B, k), sskB), pk(attacker))\nAttacker->>Attacker: decrypt and recover k\nInitiator->>Attacker: sencrypt(secretA, k)\nAttacker->>Attacker: decrypt secretA\nalt Second trace\nAttacker->>EncKeyReg: insert enc_keys(A, attacker-controlled key)\nAttacker->>Server: obtain signed cert for A's attacker key and cert for B's key\nAttacker->>Responder: start as xB = B; send forged certified key material and km\nResponder->>Attacker: sencrypt(secretB, k)\nAttacker->>Attacker: decrypt secretB\nend",
+    "explanation": "The main bug is that process_encK accepts arbitrary registrations for any host, including the honest identities A and B. The traces show the attacker inserting enc_keys(B, pk(attacker)) and enc_keys(A, attacker-controlled key), then asking the server to certify those entries. In the first attack, the initiator encrypts the fresh session key k to the attacker’s certified key for B, so the attacker learns k and decrypts secretA. In the second attack, the attacker again relies on a forged enc_keys entry for A, and because the server’s two certificate formats are not distinguished by a tag, that server-signed value is reused where the responder expects A’s signing key certificate; the responder then accepts attacker-chosen key material and releases secretB under a key known to the attacker.",
+    "patch_suggestion": "Make the encryption-key registration process reject registrations for the honest names A and B, mirroring process_signK. Minimal local patch:\nlet process_encK =\n        in(c, (h: host, pk: pkey));\n        if h <> A && h <> B then insert enc_keys(h, pk).\nThis prevents the attacker from poisoning enc_keys for A or B, which is the prerequisite used in both traces.",
+    "notes": "The secretB trace also benefits from certificate confusion because the server signs both certificate kinds with the same untagged structure. However, the smallest fix directly supported by the traces is to block attacker registration of enc_keys for A and B."
+  }
+}

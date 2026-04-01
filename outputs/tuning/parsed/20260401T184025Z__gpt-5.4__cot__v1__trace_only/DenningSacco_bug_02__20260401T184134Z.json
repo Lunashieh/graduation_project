@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_02",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T184134Z",
+  "usage": {
+    "input_tokens": 10247,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 3346,
+    "output_tokens_details": {
+      "reasoning_tokens": 2524
+    },
+    "total_tokens": 13593
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant Attacker\n    participant Server\n    participant Initiator\n    participant Responder\n\n    alt Leak of secretA\n        Attacker->>Server: request certs for (B,B)\n        Server-->>Attacker: sign((B,spkB),skS), sign((B,pkB),skS)\n        Attacker->>Initiator: xA = B\n        Attacker->>Initiator: cert1=sign((B,spkB),skS), cert2=sign((B,pkB),skS)\n        Initiator->>Initiator: verify certs, create fresh k\n        Initiator-->>Attacker: sign((B,B,k),sskB)\n        Attacker->>Attacker: getmess(...) -> (B,B,k), extract k\n        Initiator-->>Attacker: sencrypt(secretA,k)\n        Attacker->>Attacker: sdecrypt(...,k) = secretA\n    end\n\n    alt Leak of secretB\n        Attacker->>Server: request certs for (A,B)\n        Server-->>Attacker: sign((A,spkA),skS), sign((B,pkB),skS)\n        Attacker->>Server: request certs for (B,B)\n        Server-->>Attacker: sign((B,spkB),skS), sign((B,pkB),skS)\n        Attacker->>Initiator: xA = A\n        Attacker->>Initiator: cert1=sign((A,spkA),skS), cert2=sign((B,spkB),skS)\n        Initiator->>Initiator: verify cert1, parse cert2, create fresh k\n        Initiator-->>Attacker: sign((A,B,k),sskA)\n        Attacker->>Attacker: getmess(...) -> (A,B,k), extract k\n        Attacker->>Responder: xB = B\n        Attacker->>Responder: cert1=sign((A,spkA),skS), cert2=sign((B,pkB),skS), km=sign((A,B,k),sskA)\n        Responder->>Responder: verify km with pk1 from cert1\n        Responder-->>Attacker: sencrypt(secretB,k)\n        Attacker->>Attacker: sdecrypt(...,k) = secretB\n    end",
+    "explanation": "The trace shows that the session key k is sent only inside a signature, and in this model signatures are publicly readable via getmess(sign(m,sk)) = m. So the attacker can recover k from sign((A,B,k),sskA) or sign((B,B,k),sskB), then decrypt sencrypt(secretA,k); the same recovered k can also be replayed to the responder to obtain and decrypt sencrypt(secretB,k).",
+    "patch_suggestion": "Use the recipient encryption key from cert2 to protect the signed session-key message. In the initiator, replace out(c, (cert1, cert2, sign((xA,h2,k), sskA))) with out(c, (cert1, cert2, encrypt(sign((xA,h2,k), sskA), pk2))). In the responder, decrypt first and then verify: let ks = decrypt(km, skB) in let (=h1, =xB, k:key) = checksign(ks, pk1) in ... . This is the minimal change that prevents the attacker from learning k from the clear signature.",
+    "notes": "The rebinding warnings are present, but the secrecy break shown by the trace is directly due to k being exposed in a signed plaintext token. The trace also shows the attacker can choose xA/xB to start roles as A or B."
+  }
+}

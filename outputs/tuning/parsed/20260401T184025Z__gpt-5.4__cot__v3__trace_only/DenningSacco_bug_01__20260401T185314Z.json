@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_01",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T185314Z",
+  "usage": {
+    "input_tokens": 10241,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4384,
+    "output_tokens_details": {
+      "reasoning_tokens": 3551
+    },
+    "total_tokens": 14625
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    actor Attacker\n    participant EK as process_encK\n    participant SK as process_signK\n    participant S as processS\n    participant Init as processInitiator (xA = B)\n    participant Resp as processResponder (xB = B)\n\n    alt secretA attack\n        Attacker->>EK: register (B, pk(attacker_sk))\n        Attacker->>S: request certs for (B, B)\n        S-->>Attacker: cert1 = sign((B, spkB), skS)\n        S-->>Attacker: cert2 = sign((B, pk(attacker_sk)), skS)\n        Attacker->>Init: start with xA = B\n        Attacker->>Init: send cert1, cert2\n        Init-->>Attacker: cert1, cert2, encrypt(sign((B, B, k), sskB), pk(attacker_sk))\n        Note over Attacker: decrypts message, extracts k\n        Init-->>Attacker: sencrypt(secretA, k)\n        Note over Attacker: decrypts and learns secretA\n    else secretB attack\n        Attacker->>SK: register (fakeHost, fakeSpk)\n        Attacker->>EK: register (A, attacker_controlled_key)\n        Attacker->>S: request cert giving B's honest encryption key\n        S-->>Attacker: certB = sign((B, pkB), skS)\n        Attacker->>S: request cert giving sign((A, attacker_controlled_key), skS)\n        S-->>Attacker: certA* = sign((A, attacker_controlled_key), skS)\n        Note over Attacker,Resp: certA* is reused as responder cert1\n        Attacker->>Resp: start with xB = B\n        Attacker->>Resp: certA*, certB, encrypt(sign((A, B, k), attacker_secret), pkB)\n        Resp-->>Attacker: sencrypt(secretB, k)\n        Note over Attacker: decrypts and learns secretB\n    end",
+    "explanation": "The trace shows that the attacker can publicly add encryption-key bindings for honest names A and B through process_encK. That lets the server issue signed certificates for attacker-chosen keys under honest identities. In the secretA trace, the attacker registers B with an attacker-owned public key, obtains a server-signed cert2 for B, starts the initiator as xA = B, and decrypts the returned session-key message to recover k and then secretA. In the secretB trace, the attacker gets a server-signed certificate on (A, attacker-controlled key) and reuses it as cert1 at the responder, because cert1 and cert2 are both just untagged signed pairs. The responder then accepts an attacker-forged session key and releases secretB. So the visible failure is that honest name-to-key bindings can be attacker-inserted via enc_keys, enabling forged certified keys and certificate confusion.",
+    "patch_suggestion": "Make encryption-key registration reject honest identities, mirroring the existing check in process_signK. Minimal local patch:\n\nlet process_encK =\n    in(c, (h: host, pk: pkey));\n    if h <> A && h <> B then insert enc_keys(h, pk).\n\nThis blocks the shown attacks by preventing the attacker from obtaining server-signed encryption certificates for A or B on attacker-chosen keys.",
+    "notes": "The supplied trace shows secrecy failures for secretA and secretB, even though the comment block in the .pv file mentions only injective-authentication failures. Also, cert1/cert2 are structurally similar signed pairs, so adding explicit tags to certificate formats would be a useful hardening step, but it is not the minimal fix needed for the concrete traces shown."
+  }
+}

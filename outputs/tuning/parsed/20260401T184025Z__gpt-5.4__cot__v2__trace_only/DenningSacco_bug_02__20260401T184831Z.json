@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_02",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T184831Z",
+  "usage": {
+    "input_tokens": 10261,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4905,
+    "output_tokens_details": {
+      "reasoning_tokens": 4115
+    },
+    "total_tokens": 15166
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant Attacker\n    participant I as Initiator\n    participant R as Responder\n    participant S as Server\n\n    alt Leak of secretA\n        Attacker->>I: xA = B\n        Attacker->>S: (B, B)\n        S-->>Attacker: sign((B, spk(sskB)), skS), sign((B, pk(skB)), skS)\n        Attacker->>I: (cert1, cert2)\n        I-->>Attacker: (cert1, cert2, sign((B, B, k), sskB))\n        I-->>Attacker: sencrypt(secretA, k)\n        Attacker->>Attacker: recover k from signed message\n        Attacker->>Attacker: sdecrypt(sencrypt(secretA, k), k) = secretA\n    else Leak of secretB\n        Attacker->>I: xA = A\n        Attacker->>R: xB = B\n        Attacker->>S: request server-signed certificates\n        S-->>Attacker: server-signed certificates for A/B\n        Attacker->>I: certificate pair accepted by initiator\n        I-->>Attacker: (cert1, cert2, sign((A, B, k), sskA))\n        Attacker->>R: (sign((A, spk(sskA)), skS), sign((B, pk(skB)), skS), sign((A, B, k), sskA))\n        R-->>Attacker: sencrypt(secretB, k)\n        Attacker->>Attacker: recover k from sign((A, B, k), sskA)\n        Attacker->>Attacker: sdecrypt(sencrypt(secretB, k), k) = secretB\n    end",
+    "explanation": "The secrecy failure is that the fresh session key k is sent on the public channel inside A/B's signed message. The traces show the attacker can obtain valid server certificates, trigger the initiator, learn k from the emitted signature over (xA, h2, k), and then decrypt sencrypt(secretA, k). In the second trace, the attacker reuses the initiator's signed key message with the responder, which then outputs sencrypt(secretB, k); since k is already recoverable, secretB is also leaked.",
+    "patch_suggestion": "Protect the signed session-key message before sending it. A minimal protocol patch is to use the certified encryption key pk2 already parsed by the initiator:\n- In processInitiator, replace out(c, (cert1, cert2, sign((xA, h2, k), sskA))) with out(c, (cert1, cert2, encrypt(sign((xA, h2, k), sskA), pk2))).\n- In processResponder, replace let ks = km in let (=h1, =xB, k:key) = checksign(ks, pk1) with let ks = decrypt(km, skB) in let (=h1, =xB, k:key) = checksign(ks, pk1).\nThis directly prevents the attacker from learning k from the public transcript.",
+    "notes": "The provided EXPECTPV block in the file says secrecy should be true, but the actual ProVerif log shows both secrecy queries are false. Also, in the secretB material, the initiator-side certificate pair shown in the long trace is not fully consistent with the typed source pattern, so the diagram keeps that initiator certificate pair generic there. The well-supported facts are the two secrecy attacks and the public recovery/use of the same session key k."
+  }
+}

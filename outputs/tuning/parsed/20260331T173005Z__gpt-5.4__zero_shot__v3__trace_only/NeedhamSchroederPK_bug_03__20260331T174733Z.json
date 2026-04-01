@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_03",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T174733Z",
+  "usage": {
+    "input_tokens": 11559,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 1862,
+    "output_tokens_details": {
+      "reasoning_tokens": 1330
+    },
+    "total_tokens": 13421
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant I as Attacker\n    participant B as Responder B\n    participant S as Server\n\n    I->>B: start responder with xB = B\n    I->>B: Message 3 = encrypt((y, B), pkB)\n    Note over B: beginAparam(B,B)\n    B->>S: (B, B)\n    S-->>B: sign((pkB, B), skS)\n    B-->>I: Message 6 = encrypt((y, Nb, B), pkB)\n    I->>B: Fake Message 7 = encrypt(y, pkB)\n    Note over B: Check passes because code compares decrypted m3 with NY (= y)\n    Note over B: endBparam(B,B) and endBfull(B,B,pkB,pkB,y,Nb)\n    B-->>I: sencrypt(secretBNa, y)\n    I->>I: Decrypt with known y to obtain secretBNa",
+    "explanation": "The responder completes the protocol on its own, without any matching initiator run. In the trace, the attacker starts B as responder, chooses a nonce y, and sends Message 3 as encrypt((y,B), pkB). B then returns Message 6 containing its fresh Nb, but the final check is buggy: it accepts Message 7 if it decrypts to NY (the attacker-chosen first nonce) instead of Nb (the responder's challenge). Since the attacker already knows y, it can send encrypt(y, pkB), make B fire endBparam/endBfull, and recover secretBNa from sencrypt(secretBNa, y). This is exactly why secretBNa secrecy and the responder authentication queries fail.",
+    "patch_suggestion": "In processResponder, change the final test to verify the responder's fresh nonce Nb, not the received nonce NY. Minimal local patch:\n\nreplace\nif nonce_to_bitstring(NY) = decrypt(m3, skB) then\n\nwith\nif nonce_to_bitstring(Nb) = decrypt(m3, skxB) then\n\nAt minimum, replacing NY by Nb blocks the shown attack; using skxB also keeps the check consistent with the selected responder identity.",
+    "notes": "The trace-based attack is explained by the NY/Nb mix-up. The hardcoded skB/skA uses in the role code also look inconsistent with the chosen identities, but they are not needed for the specific counterexample shown here."
+  }
+}

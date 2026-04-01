@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_01",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T174200Z",
+  "usage": {
+    "input_tokens": 10236,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4604,
+    "output_tokens_details": {
+      "reasoning_tokens": 3775
+    },
+    "total_tokens": 14840
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant E as Attacker\nparticipant SK as SignKeyReg\nparticipant EK as EncKeyReg\nparticipant S as Server\nparticipant I as Initiator (started with xA=B)\nparticipant R as Responder (started with xB=B)\n\nalt Attack leaking secretA\n  E->>S: request certs for (B,B)\n  S-->>E: sign((B,spkB),skS), sign((B,pkB),skS)\n  E->>SK: register fake sign key for some non-honest host x\n  E->>EK: register fake enc key for B: pk(y)\n  E->>S: request certs for (x,B)\n  S-->>E: sign((x,spkX),skS), sign((B,pk(y)),skS)\n  E->>I: send xA=B\n  E->>I: cert1=sign((B,spkB),skS), cert2=sign((B,pk(y)),skS)\n  I-->>E: encrypt(sign((B,B,k),sskB),pk(y))\n  E->>E: decrypt with y, recover k\n  I-->>E: sencrypt(secretA,k)\n  E->>E: sdecrypt with k => secretA\nelse Attack leaking secretB\n  E->>SK: register fake sign key for some non-honest host x\n  E->>EK: register fake enc key for A: spk(a9)\n  E->>S: request certs for (x,A)\n  S-->>E: sign((x,spkX),skS), sign((A,spk(a9)),skS)\n  E->>SK: register fake sign key for some non-honest host x'\n  E->>S: request certs for (x',B)\n  S-->>E: sign((x',spkY),skS), sign((B,pkB),skS)\n  E->>R: send xB=B\n  E->>R: cert1=sign((A,spk(a9)),skS), cert2=sign((B,pkB),skS), encrypt(sign((A,B,y),a9),pkB)\n  R-->>E: sencrypt(secretB,y)\n  E->>E: sdecrypt with y => secretB\nend",
+    "explanation": "The failure comes from process_encK accepting arbitrary encryption-key registrations for any host, including the honest names A and B. The attacker can therefore overwrite B's encryption key with its own key, ask the server for a signed certificate on that fake binding, and trick the initiator into encrypting the session key to the attacker; this reveals k and then secretA. The same flaw also enables a second attack on secretB: the attacker gets the server to sign a fake key bound to A and reuses that untagged signed pair where the responder expects A's signing-key certificate, so B accepts an attacker-chosen session key and returns secretB under it.",
+    "patch_suggestion": "Make encryption-key registration reject the honest identities, just as process_signK already does. Minimal local change:\n\nlet process_encK =\n    in(c, (h: host, pk: pkey));\n    if h <> A && h <> B then insert enc_keys(h, pk).\n\nThis prevents the attacker from registering fake keys for A or B, so the server can no longer issue bogus certificates for the honest parties' encryption keys.",
+    "notes": "The secretB trace also shows that certificates are untagged and can be type-confused across roles. Tagging signing-key vs encryption-key certificates would be a stronger hardening, but the registration check above is the smallest direct fix supported by the traces."
+  }
+}

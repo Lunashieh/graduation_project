@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_01",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T184716Z",
+  "usage": {
+    "input_tokens": 10240,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4883,
+    "output_tokens_details": {
+      "reasoning_tokens": 3946
+    },
+    "total_tokens": 15123
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant Attacker\n    participant Initiator\n    participant Responder\n    participant Server\n    participant SignReg\n    participant EncReg\n\n    alt Trace for secretA\n        Attacker->>Initiator: xA = B\n        Attacker->>Server: (B, B)\n        Server-->>Attacker: sign((B, spk(sskB)), skS), sign((B, pk(skB)), skS)\n        Attacker->>SignReg: (a2, a4)\n        Note right of SignReg: insert sign_keys(a2, a4)\n        Attacker->>EncReg: (B, pk(a6))\n        Note right of EncReg: insert enc_keys(B, pk(a6))\n        Attacker->>Server: (a2, B)\n        Server-->>Attacker: sign((a2, a4), skS), sign((B, pk(a6)), skS)\n        Attacker->>Initiator: cert1 = sign((B, spk(sskB)), skS), cert2 = sign((B, pk(a6)), skS)\n        Initiator-->>Attacker: (cert1, cert2, encrypt(sign((B, B, k), sskB), pk(a6)))\n        Initiator-->>Attacker: sencrypt(secretA, k)\n\n    alt Trace for secretB\n        Attacker->>Responder: xB = B\n        Attacker->>SignReg: (a1, a5)\n        Note right of SignReg: insert sign_keys(a1, a5)\n        Attacker->>EncReg: (A, spk(a9))\n        Note right of EncReg: insert enc_keys(A, spk(a9))\n        Attacker->>Server: (a1, A)\n        Server-->>Attacker: sign((a1, a5), skS), sign((A, spk(a9)), skS)\n        Attacker->>SignReg: (a3, a7)\n        Note right of SignReg: insert sign_keys(a3, a7)\n        Attacker->>Server: (a3, B)\n        Server-->>Attacker: sign((a3, a7), skS), sign((B, pk(skB)), skS)\n        Attacker->>Responder: cert1 = sign((A, spk(a9)), skS), cert2 = sign((B, pk(skB)), skS), km = encrypt(sign((A, B, y), a9), pk(skB))\n        Responder-->>Attacker: sencrypt(secretB, y)\n    end",
+    "explanation": "Both secrecy queries fail because the model lets the attacker populate enc_keys for any host through process_encK. Unlike process_signK, there is no check excluding A and B. The server then signs attacker-controlled encryption-key entries as if they were valid certificates for honest hosts. In the secretA trace, the attacker registers enc_keys(B, pk(attacker)), gets a server-signed certificate for B, and makes the initiator encrypt the session material to the attacker's key, which reveals k and then secretA. In the secretB trace, the attacker again abuses enc_keys and the responder accepts a server-signed value sign((A, spk(a9)), skS) as cert1, so the attacker-chosen key a9 is used to validate the inner signed message and secretB is released under attacker-known y.",
+    "patch_suggestion": "Protect encryption-key registration for honest names the same way as signature-key registration. A minimal patch is:\nlet process_encK =\n    in(c, (h: host, pk: pkey));\n    if h <> A && h <> B then insert enc_keys(h, pk).\nThis blocks attacker insertion of enc_keys for A or B, which is the direct enabler shown in both traces.",
+    "notes": "The secretB trace also shows certificate confusion: a server-signed term of the form sign((A, spk(a9)), skS) is accepted in the responder's cert1 position. The artifacts support this behavior, but the clearest minimal fix directly evidenced by both attacks is to stop attacker-controlled enc_keys entries for honest hosts."
+  }
+}

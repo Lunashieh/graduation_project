@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_03",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T184222Z",
+  "usage": {
+    "input_tokens": 9699,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 1092,
+    "output_tokens_details": {
+      "reasoning_tokens": 516
+    },
+    "total_tokens": 10791
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    actor Attacker\n    participant S as Server S\n    participant I as Initiator\n    participant R as Responder B\n\n    Note over Attacker,S: Attacker can request certificates from S on public channel c\n    Attacker->>S: (A, B)\n    S-->>Attacker: certA = sign((A, spkA), skS), certB = sign((B, pkB), skS)\n\n    Attacker->>I: start with xA = A\n    Attacker->>I: (certA, certB)\n    Note over I: k := kdf(certB)\n    I-->>Attacker: (certA, certB, encrypt(sign((A,B,k), sskA), pkB))\n    I-->>Attacker: sencrypt(secretA, k)\n\n    Note over Attacker: certB is public, so attacker computes k = kdf(certB)\n    Attacker->>Attacker: sdecrypt(sencrypt(secretA,k), k)\n\n    Attacker->>R: start with xB = B\n    Attacker->>R: (certA, certB, encrypt(sign((A,B,k), sskA), pkB))\n    R-->>Attacker: sencrypt(secretB, k)\n    Attacker->>Attacker: sdecrypt(sencrypt(secretB,k), k)\n\n    Note over Attacker,I: Trace also shows a direct run with xA = B and certificates (B,B), yielding secretA under the same attacker-computable k",
+    "explanation": "The protocol computes the session key as `kdf(cert2)` in the initiator. Since `cert2` is a server-signed certificate sent over the public channel, the attacker knows it and can derive the same `k`. As a result, any `sencrypt(secretA, k)` or `sencrypt(secretB, k)` output is decryptable by the attacker. The trace confirms both attacks: one direct run leaks `secretA`, and another run forwards the initiator's message to the responder and leaks `secretB`.",
+    "patch_suggestion": "Do not derive the session key from the public certificate. In `processInitiator`, replace `let k: key = kdf(cert2) in` with `new k: key in`. Keep sending `k` inside the signed payload encrypted for `pk2`, so the responder still recovers the same fresh key from `km`.",
+    "notes": "The warnings about rebound identifiers appear in the log, but the secrecy break shown by the trace is caused by the public derivation of `k`, not by those warnings."
+  }
+}

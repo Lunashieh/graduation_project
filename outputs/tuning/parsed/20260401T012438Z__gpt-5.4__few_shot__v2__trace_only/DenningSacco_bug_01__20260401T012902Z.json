@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_01",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T012902Z",
+  "usage": {
+    "input_tokens": 10483,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 3769,
+    "output_tokens_details": {
+      "reasoning_tokens": 2951
+    },
+    "total_tokens": 14252
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant Server\nparticipant Initiator\nparticipant Responder\nNote over Attacker,Server: The attacker can register enc_keys entries for honest names\nalt secretA trace\nAttacker->>Initiator: start initiator with xA = B\nAttacker->>Server: request certificates for (B, B)\nServer-->>Attacker: cert for (B, spk(B)); cert for (B, pk(B))\nAttacker->>Server: register sign key for a non-honest host\nAttacker->>Server: register enc key for B as pk(attacker secret)\nAttacker->>Server: request certificates for (non-honest host, B)\nServer-->>Attacker: cert for (non-honest host, attacker sign key); cert for (B, attacker encryption key)\nAttacker->>Initiator: cert for (B, spk(B)); cert for (B, attacker encryption key)\nInitiator-->>Attacker: (cert1, cert2, encrypt(sign((B, B, k), sskB), attacker encryption key))\nAttacker->>Attacker: decrypt and extract k\nInitiator-->>Attacker: sencrypt(secretA, k)\nAttacker->>Attacker: decrypt secretA\nelse secretB trace\nAttacker->>Responder: start responder with xB = B\nAttacker->>Server: register sign key for a non-honest host\nAttacker->>Server: request certificates involving B\nServer-->>Attacker: server-signed cert for B's encryption key\nAttacker->>Server: register enc key for A as attacker-controlled key\nAttacker->>Server: request certificates involving A\nServer-->>Attacker: server-signed cert for (A, attacker-controlled key)\nNote over Attacker,Responder: The trace shows this server-signed value is accepted in the responder input\nAttacker->>Responder: cert for (A, attacker-controlled key), cert for (B, pk(B)), encrypt(sign((A, B, k), attacker key), pk(B))\nResponder-->>Attacker: sencrypt(secretB, k)\nAttacker->>Attacker: decrypt secretB\nend",
+    "explanation": "ProVerif shows that both secrecy queries fail. The common issue in the trace is that `process_encK` lets the attacker insert `enc_keys` entries for any host, including honest `A` and `B`. The server then signs these attacker-chosen key bindings. In the `secretA` trace, the initiator is run as `B` and is given a server-signed certificate that binds `B` to the attacker's encryption key, so the session key `k` is encrypted to the attacker, who then decrypts `secretA`. In the `secretB` trace, the responder accepts a server-signed value for an attacker-controlled key under `A`, which lets the attacker construct the encrypted signed payload with an attacker-chosen session key and then decrypt `secretB`.",
+    "patch_suggestion": "Minimally, restrict `process_encK` the same way `process_signK` is restricted, so attacker-controlled encryption keys cannot be registered for honest principals. For example: `let process_encK = in(c, (h: host, pk: pkey)); if h <> A && h <> B then insert enc_keys(h, pk).` This prevents the server from certifying fake key bindings for `A` or `B`, which are the bindings used in the shown attacks.",
+    "notes": "The `secretB` trace also shows a server-signed value coming from the encryption-key certification path being accepted where the responder expects its first certificate. The trace supports that this reuse is accepted, but the exact typing details are implicit in the ProVerif output, so the explanation is kept conservative."
+  }
+}

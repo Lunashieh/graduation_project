@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_02",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T013756Z",
+  "usage": {
+    "input_tokens": 10565,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 2401,
+    "output_tokens_details": {
+      "reasoning_tokens": 1811
+    },
+    "total_tokens": 12966
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant Server\nparticipant Initiator\nparticipant Responder\nAttacker->>Server: request certified key data\nServer-->>Attacker: cert1, cert2 signed by S\nAttacker->>Initiator: choose xA = A or B; send cert1, cert2\nInitiator->>Attacker: (cert1, cert2, sign((xA,h2,k), ssk_xA))\nNote over Attacker: getmess(sign(...)) reveals (xA,h2,k), so k becomes known\nalt Attacker started Initiator as B and h2 = B\nInitiator->>Attacker: sencrypt(secretA, k)\nAttacker->>Attacker: sdecrypt(..., k) => secretA\nelse Attacker started Initiator as A and h2 = B\nAttacker->>Responder: forward certs and signed key message\nResponder->>Attacker: sencrypt(secretB, k)\nAttacker->>Attacker: sdecrypt(..., k) => secretB\nend",
+    "explanation": "The trace shows that the session key `k` is sent only inside a signature: `sign((xA,h2,k), sskA)`. In this model, signatures are publicly readable because `getmess(sign(m,k)) = m`, so the attacker can extract `(xA,h2,k)` and learn `k` directly. Once `k` is known, the attacker decrypts `sencrypt(secretA,k)` or forwards the signed key message to the responder and then decrypts `sencrypt(secretB,k)`. The evidence also shows that the initiator receives the recipient encryption certificate `cert2` but never uses `pk2` to protect the key message.",
+    "patch_suggestion": "Use the certified recipient encryption key `pk2` to encrypt the signed key message, and decrypt it at the responder before checking the signature. Minimal local change: in the initiator, replace `out(c, (cert1, cert2, sign((xA, h2, k), sskA)))` with `out(c, (cert1, cert2, encrypt(sign((xA, h2, k), sskA), pk2)))`; in the responder, replace `let ks = km in` with `let ks = decrypt(km, skB) in`. This keeps the protocol structure and prevents the attacker from reading `k` from the network.",
+    "notes": "The `secretB` attack also uses a mismatched second certificate in one run, but the core secrecy break is already enough: `km` is not encrypted and `pk2` is ignored. Encrypting `km` with `pk2` and decrypting with `skB` is the smallest fix directly supported by the trace."
+  }
+}

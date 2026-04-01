@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_03",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T014044Z",
+  "usage": {
+    "input_tokens": 11867,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 2015,
+    "output_tokens_details": {
+      "reasoning_tokens": 1566
+    },
+    "total_tokens": 13882
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant B as Responder(B)\nparticipant Server\nAttacker->>B: start responder with xB = B\nAttacker->>B: encrypt((NY, B), pkB)\nB->>Server: (B, B)\nServer->>B: sign((pkB, B), skS)\nB->>Attacker: encrypt((NY, Nb, B), pkB)\nAttacker->>B: encrypt(NY, pkB)\nB->>B: accepts session and raises endB events\nB->>Attacker: sencrypt(secretBNa, NY)\nAttacker->>Attacker: decrypt with known NY and recover secretBNa",
+    "explanation": "The responder accepts the final message by checking that it contains NY (the nonce received in message 3) instead of Nb (the fresh nonce it generated in message 6). The trace shows the attacker choosing NY itself, sending encrypt((NY,B),pkB), receiving encrypt((NY,Nb,B),pkB), and then completing the run with encrypt(NY,pkB). Since the attacker already knows NY, it can satisfy the check without involving any honest initiator. As a result, B reaches endBparam/endBfull with no matching initiator beginB event, and it releases secretBNa under a key derived from attacker-known NY.",
+    "patch_suggestion": "In the responder's message-7 verification, compare the decrypted value with Nb, not NY. A minimal local fix is to replace:\nif nonce_to_bitstring(NY) = decrypt(m3, skB) then\nwith:\nif nonce_to_bitstring(Nb) = decrypt(m3, skxB) then\nAt minimum, changing NY to Nb is the key fix supported by the trace; using skxB also keeps the decryption aligned with the responder identity actually selected for the session.",
+    "notes": "The attack trace is a self-session on B (hostY = B, xB = B); no honest initiator run occurs. The primary evidenced bug is the wrong nonce checked in message 7."
+  }
+}

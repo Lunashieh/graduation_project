@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_01",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T173300Z",
+  "usage": {
+    "input_tokens": 23395,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 3501,
+    "output_tokens_details": {
+      "reasoning_tokens": 2920
+    },
+    "total_tokens": 26896
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    actor I as Attacker\n    participant K as KeyReg\n    participant A as Initiator A\n    participant B as Responder B\n    participant S as Server\n\n    I->>K: (B, pk(y))\n    Note right of K: insert keys(B, pk(y))\n\n    I->>A: start (A, B)\n    A->>S: (A, B)\n    S-->>A: sign((pk(y), B), skS)\n    A->>I: encrypt((Na, A), pk(y))\n    Note over I: decrypt with y and learn Na\n\n    I->>B: start B\n    I->>B: encrypt((Na, A), pkB)\n    B->>S: (B, A)\n    S-->>B: sign((pkA, A), skS)\n    B-->>I: encrypt((Na, Nb, B), pkA)\n\n    I->>A: encrypt((Na, Nb, B), pkA)\n    A->>I: encrypt(Nb, pk(y))\n    Note over I: decrypt with y and learn Nb\n\n    A-->>I: sencrypt(secretANa, Na)\n    A-->>I: sencrypt(secretANb, Nb)\n    Note over I: use Na and Nb to recover both secrets",
+    "explanation": "The main break is key-table poisoning via !processK. The attacker can register keys(A, pk(y)) or keys(B, pk(y)) for honest names, and processS will then sign these attacker-chosen bindings. In the trace, A accepts a signed certificate binding B to an attacker key, so message 3 is encrypted to the attacker; later A also returns Nb under that same attacker key. This lets the attacker learn Na and Nb and decrypt secretANa/secretANb. The same certificate-substitution pattern also lets responder sessions complete without a matching honest peer, so all authentication queries fail.",
+    "patch_suggestion": "Prevent attacker-controlled registration for the honest identities. Minimal change:\nlet processK =\n  in(c, (h: host, k: pkey));\n  if h <> A && h <> B then insert keys(h,k).\n\nEquivalently, remove !processK if only A and B are modeled. This preserves the fixed bindings inserted at startup and stops the server from certifying attacker keys as A or B.",
+    "notes": "The file also contains hard-coded uses of skA/skB where skxA/skxB would normally be expected, but the supplied counterexamples already succeed because the attacker can poison the key table for A/B."
+  }
+}

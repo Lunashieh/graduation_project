@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_01",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T185559Z",
+  "usage": {
+    "input_tokens": 23468,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 3904,
+    "output_tokens_details": {
+      "reasoning_tokens": 3221
+    },
+    "total_tokens": 27372
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant M as Attacker\n    participant K as processK\n    participant A as Initiator A\n    participant B as Responder B\n    participant S as Server S\n\n    M->>K: (B, pk(M))\n    Note over K: insert keys(B, pk(M))\n\n    M->>A: start with (A, B)\n    A->>S: (A, B)\n    S-->>A: sign((pk(M), B), skS)\n    A->>M: encrypt((Na, A), pk(M))\n\n    M->>B: encrypt((Na, A), pkB)\n    B->>S: (B, A)\n    S-->>B: sign((pkA, A), skS)\n    B-->>M: encrypt((Na, Nb, B), pkA)\n\n    M->>A: forward encrypt((Na, Nb, B), pkA)\n    A->>M: encrypt(Nb, pk(M))\n    A-->>M: sencrypt(secretANa, Na)\n    A-->>M: sencrypt(secretANb, Nb)\n\n    Note over M,S: The same table-injection trick also works for A or B certificates in other traces, leading to leakage of secretBNa/secretBNb and unmatched end-events.",
+    "explanation": "The trace shows a certificate/key-substitution attack caused by the attacker-controlled key-registration process. In processK, the attacker can insert keys(A, pk(attacker)) or keys(B, pk(attacker)) into the keys table ({63}-{64}). Then the server signs that attacker key as if it belonged to the honest identity ({60}), and the honest roles accept it with checksign.\n\nOnce that happens, protocol messages that should be encrypted for A or B are instead encrypted under the attacker's key, so the attacker learns the session nonces (Na or Nb). The leaked nonce is then used to decrypt the later sencrypt(secret..., nonce) outputs, which is exactly how ProVerif derives attacker(secretANa), attacker(secretANb), attacker(secretBNa), and attacker(secretBNb). The same forged certificates also let runs reach end-events without a matching honest peer run, so the correspondence queries fail too.",
+    "patch_suggestion": "Make key registration reject the two honest identities, so the attacker cannot replace A's or B's certified public key. A minimal local patch is to change processK to:\n\nlet processK =\n    in(c, (h: host, k: pkey));\n    if h = A || h = B then 0 else insert keys(h,k).\n\nThis directly blocks the trace pattern where the attacker inserts keys(A, pk(attacker)) or keys(B, pk(attacker)) and then gets the server to sign those bogus bindings.",
+    "notes": "This patch is targeted to the concrete attack shown in the trace. The file also contains suspicious hardcoded uses of skA/skB where skxA/skxB would be expected, but the provided attacks already succeed via forged key-table entries, so blocking registration for A and B is the smallest trace-supported fix."
+  }
+}

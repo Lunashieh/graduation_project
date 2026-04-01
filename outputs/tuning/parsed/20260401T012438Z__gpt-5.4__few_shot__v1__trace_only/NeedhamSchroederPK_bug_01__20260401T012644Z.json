@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_01",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T012644Z",
+  "usage": {
+    "input_tokens": 23597,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 2940,
+    "output_tokens_details": {
+      "reasoning_tokens": 2443
+    },
+    "total_tokens": 26537
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Initiator as Initiator(A)\nparticipant Responder as Responder(B)\nparticipant Server\nparticipant KeyReg as KeyRegistry\nparticipant Attacker\nAttacker->>KeyReg: register (B, pk(attacker))\nAttacker->>Server: request certificate for B\nServer->>Attacker: sign((pk(attacker), B), skS)\nAttacker->>Initiator: deliver signed cert for B\nInitiator->>Attacker: encrypt((Na, A), pk(attacker))\nAttacker->>Attacker: decrypt and learn Na\nAttacker->>Responder: encrypt((Na, A), pk(B))\nResponder->>Server: request certificate for A\nServer->>Responder: sign((pk(A), A), skS)\nResponder->>Attacker: encrypt((Na, Nb, B), pk(A))\nAttacker->>Initiator: forward encrypt((Na, Nb, B), pk(A))\nInitiator->>Attacker: encrypt(Nb, pk(attacker))\nAttacker->>Attacker: decrypt and learn Nb\nInitiator->>Attacker: sencrypt(secretANa, Na)\nInitiator->>Attacker: sencrypt(secretANb, Nb)",
+    "explanation": "The attack comes from the attacker-writable key table. Via processK, the attacker inserts pk(attacker) for an honest identity such as A or B, and processS then signs that bogus binding. Both roles accept the signed fake certificate, so the attacker can substitute keys, recover Na and/or Nb from protocol traffic, decrypt the corresponding sencrypt(secret..., nonce) outputs, and also make sessions terminate without a matching honest peer. This is why all secrecy and correspondence queries fail.",
+    "patch_suggestion": "Do not allow untrusted key registration for honest hosts. Remove or restrict !processK so only trusted setup inserts keys(A, pkA) and keys(B, pkB), or enforce authenticated ownership and reject attacker-supplied inserts/overwrites for A and B. Then processS will certify only the genuine public keys.",
+    "notes": "The traces are driven by forged key-table entries. The model also hard-codes skA/skB in the initiator/responder checks instead of the selected role key skxA/skxB, which is worth reviewing separately."
+  }
+}

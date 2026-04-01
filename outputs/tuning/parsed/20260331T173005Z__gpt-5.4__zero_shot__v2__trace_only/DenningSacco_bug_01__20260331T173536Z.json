@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_01",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T173536Z",
+  "usage": {
+    "input_tokens": 10251,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 4410,
+    "output_tokens_details": {
+      "reasoning_tokens": 3534
+    },
+    "total_tokens": 14661
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant Attacker\n    participant EncReg as enc_keys registration\n    participant Server\n    participant Initiator\n    participant Responder\n\n    alt secretA trace\n        Attacker->>Server: (B, B)\n        Server-->>Attacker: sign((B,spk(sskB)),skS), sign((B,pk(skB)),skS)\n        Attacker->>EncReg: (B, pk(y))\n        Attacker->>Server: (a2, B)\n        Server-->>Attacker: sign((a2,a4),skS), sign((B,pk(y)),skS)\n        Attacker->>Initiator: xA = B\n        Attacker->>Initiator: cert1 = sign((B,spk(sskB)),skS), cert2 = sign((B,pk(y)),skS)\n        Initiator-->>Attacker: cert1, cert2, encrypt(sign((B,B,k),sskB), pk(y))\n        Initiator-->>Attacker: sencrypt(secretA, k)\n        Note over Attacker: Trace shows attacker uses y to recover k and then decrypts secretA\n    else secretB trace\n        Attacker->>EncReg: (A, spk(a9))\n        Attacker->>Server: (a1, A)\n        Server-->>Attacker: sign((a1,a5),skS), sign((A,spk(a9)),skS)\n        Attacker->>Server: (a3, B)\n        Server-->>Attacker: sign((a3,a7),skS), sign((B,pk(skB)),skS)\n        Attacker->>Responder: xB = B\n        Attacker->>Responder: cert1 = sign((A,spk(a9)),skS), cert2 = sign((B,pk(skB)),skS), encrypt(sign((A,B,a11),a9), pk(skB))\n        Responder-->>Attacker: sencrypt(secretB, a11)\n        Note over Attacker: Trace shows attacker knows a11 and decrypts secretB\n    end",
+    "explanation": "Both secrecy queries fail in the provided run. The common issue shown by the traces is that process_encK accepts attacker-supplied encryption-key registrations for any host, including honest A and B. The server then signs those table entries. In the secretA trace, the attacker gets a server-signed certificate for B with attacker-controlled key pk(y), starts the initiator with xA = B, receives encrypt(sign((B,B,k),sskB), pk(y)), recovers k, and then decrypts sencrypt(secretA,k). In the secretB trace, the attacker registers (A, spk(a9)) through the encryption-key path, obtains sign((A,spk(a9)),skS) from the server, and reuses that signed value as cert1; the responder accepts it and outputs sencrypt(secretB,a11), which the attacker decrypts. So the model lets attacker-chosen keys be certified for honest identities, and the second trace also shows that an encryption-key certificate can be reused where a signature-key certificate is expected.",
+    "patch_suggestion": "Minimally, restrict encryption-key registration for honest principals the same way signature-key registration is already restricted:\n\nlet process_encK =\n    in(c, (h: host, pk: pkey));\n    if h <> A && h <> B then insert enc_keys(h, pk).\n\nThis directly blocks the attacker-controlled enc_keys(B, pk(y)) and enc_keys(A, ...) entries used in the two secrecy traces. If further hardening is desired, add distinct tags to the two certificate formats before signing so a certificate produced for an encryption key cannot be reused as cert1.",
+    "notes": "The provided evidence clearly shows secrecy breaks for secretA and secretB. It does not show whether the one-line process_encK fix also resolves the remaining injective correspondence failures."
+  }
+}

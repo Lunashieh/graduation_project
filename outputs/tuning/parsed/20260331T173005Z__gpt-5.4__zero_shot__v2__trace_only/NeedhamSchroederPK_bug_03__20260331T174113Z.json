@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_03",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T174113Z",
+  "usage": {
+    "input_tokens": 11574,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 2860,
+    "output_tokens_details": {
+      "reasoning_tokens": 2286
+    },
+    "total_tokens": 14434
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant B as Responder (xB = B)\nparticipant S as Server\n\nAttacker->>B: B\nAttacker->>B: encrypt((y, B), pkB)\nNote over B: beginAparam(B,B)\nB->>S: (B, B)\nS-->>B: sign((pkB, B), skS)\nNote over B: beginAfull(B,B,pkB,pkB,y,Nb)\nB-->>Attacker: encrypt((y, Nb, B), pkB)\nAttacker->>B: encrypt(y, pkB)\nNote over B: endBparam(B,B)\\nendBfull(B,B,pkB,pkB,y,Nb)\nB-->>Attacker: sencrypt(secretBNa, y)\nB-->>Attacker: sencrypt(secretBNb, Nb)\nNote over Attacker: y is attacker-chosen, so sdecrypt(sencrypt(secretBNa,y), y) = secretBNa",
+    "explanation": "The responder can be forced to complete a session with itself: the trace shows the attacker starts the responder with xB = B, sends message 3 as encrypt((y,B), pkB), obtains the server certificate for B, and then finishes with encrypt(y, pkB). This is enough for the responder to execute endBparam(B,B) and endBfull(B,B,pkB,pkB,y,Nb) even though there is no matching initiator-side beginBparam/beginBfull event. After that, the responder outputs sencrypt(secretBNa, y); since y was chosen by the attacker, the attacker can decrypt it and learn secretBNa. This matches the failed queries for secretBNa, endBparam, and endBfull.",
+    "patch_suggestion": "Add a guard in processResponder to reject self-sessions, for example right after `let (NY: nonce, hostY: host) = decrypt(m, skxB) in` insert `if hostY <> xB then` before continuing. This directly blocks the observed attacker-driven B-to-B run that causes both the authentication failure and the leak of secretBNa.",
+    "notes": "The provided counterexample is specifically a self-session with hostY = xB = B. The trace does not show that other variants are exploitable. Also, the model contains hardcoded uses of `skA` and `skB` where `skxA`/`skxB` might be expected, but the shown B-to-B attack does not rely on that distinction because xB = B in the trace."
+  }
+}

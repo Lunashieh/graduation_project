@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "DenningSacco_bug_02",
+  "protocol": "DenningSacco",
+  "bug_id": "bug_02",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T174312Z",
+  "usage": {
+    "input_tokens": 10257,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 3754,
+    "output_tokens_details": {
+      "reasoning_tokens": 2819
+    },
+    "total_tokens": 14011
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant X as Attacker\n    participant S as Server\n    participant I as Initiator role\n    participant R as Responder role\n\n    alt Leak of secretA\n        X->>S: request certificates for (B, B)\n        S-->>X: sign((B, spkB), skS), sign((B, pkB), skS)\n        X->>I: start with xA = B\n        X->>I: cert1 = sign((B, spkB), skS), cert2 = sign((B, pkB), skS)\n        I-->>X: cert1, cert2, sign((B, B, k), sskB)\n        Note over X: Signature content is readable; attacker extracts k\n        I-->>X: sencrypt(secretA, k)\n        Note over X: Attacker decrypts with recovered k\n    end\n\n    alt Leak of secretB via replay of recovered k\n        X->>S: request certificates for (A, B)\n        S-->>X: sign((A, spkA), skS), sign((B, pkB), skS)\n        X->>S: request certificates for (B, B)\n        S-->>X: sign((B, spkB), skS), sign((B, pkB), skS)\n        X->>I: start with xA = A\n        X->>I: cert1 = sign((A, spkA), skS), cert2 = sign((B, spkB), skS)\n        I-->>X: cert1, cert2, sign((A, B, k), sskA)\n        Note over X: Signature content is readable; attacker extracts k\n        X->>R: start with xB = B\n        X->>R: cert1 = sign((A, spkA), skS), cert2 = sign((B, pkB), skS), sign((A, B, k), sskA)\n        R-->>X: sencrypt(secretB, k)\n        Note over X: Attacker decrypts with recovered k\n    end",
+    "explanation": "The failure is that the session key k is sent on the public channel inside a signature: sign((xA,h2,k), sskA). In the given ProVerif model, signatures do not hide their payload: the trace explicitly uses getmess(sign(...)) to recover (A,B,k) or (B,B,k). Once the attacker learns k, they can decrypt sencrypt(secretA,k). They can also replay the same signed key message to the responder, which accepts it and returns sencrypt(secretB,k), so secretB is leaked too. The trace shows exactly this pattern. A local symptom in the code is that the initiator parses the responder encryption key pk2 from cert2 but never uses it to protect k.",
+    "patch_suggestion": "Make the third message confidential by encrypting the signed key package with the responder's public encryption key pk2, and let the responder decrypt it with its private key before checking the signature.\n\nMinimal local change:\n- In processInitiator, replace\n  out(c, (cert1, cert2, sign((xA, h2, k), sskA)));\n  with\n  out(c, (cert1, cert2, encrypt(sign((xA, h2, k), sskA), pk2)));\n\n- In processResponder, replace\n  let ks = km in\n  let (=h1, =xB, k: key) = checksign(ks, pk1) in\n  with\n  let ks = decrypt(km, skB) in\n  let (=h1, =xB, k: key) = checksign(ks, pk1) in\n\nThis uses data already available in the roles and directly prevents the attacker from reading k off the network.",
+    "notes": "The provided trace evidence shows secrecy failures for both secretA and secretB, even though the EXPECTPV comment in the file still says those secrecy queries should be true. After the above secrecy fix, the separate injective-authentication failures may still require a freshness mechanism, but that is beyond the minimal patch for the observed leak."
+  }
+}

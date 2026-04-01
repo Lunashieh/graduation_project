@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_01",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_01",
+  "model": "gpt-5.4",
+  "timestamp": "20260331T174501Z",
+  "usage": {
+    "input_tokens": 23463,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 3418,
+    "output_tokens_details": {
+      "reasoning_tokens": 2679
+    },
+    "total_tokens": 26881
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\n    participant E as Attacker\n    participant K as KeyReg\n    participant S as Server\n    participant A as Initiator\n    participant B as Responder\n\n    alt Forged certificate for B lets attacker sit in the middle of A-B\n        E->>K: register (B, pk(E))\n        E->>S: request cert for B\n        S-->>E: sign((pk(E), B), skS)\n        A->>S: (A, B)\n        S-->>A: sign((pk(E), B), skS)\n        A->>E: encrypt((Na, A), pk(E))\n        E->>B: encrypt((Na, A), pkB)\n        B->>S: (B, A)\n        S-->>B: sign((pkA, A), skS)\n        B-->>A: encrypt((Na, Nb, B), pkA)\n        A->>E: encrypt(Nb, pk(E))\n        Note over E: E decrypts Na and Nb\\nand can recover A-side secrets\n    else Forged certificate for B lets attacker complete a responder run alone\n        E->>K: register (B, pk(E))\n        E->>S: request cert for B\n        S-->>E: sign((pk(E), B), skS)\n        E->>B: encrypt((NY, B), pkB)\n        B->>S: (B, B)\n        S-->>B: sign((pk(E), B), skS)\n        B-->>E: encrypt((NY, Nb, B), pk(E))\n        E->>B: encrypt(Nb, pkB)\n        Note over B,E: B reaches endB* with no matching honest initiator\n    end",
+    "explanation": "The failure shown by the traces is that the attacker can use processK to insert arbitrary key bindings for the honest names A or B, for example keys(A, pk(attacker)) or keys(B, pk(attacker)). The server then signs whichever table entry it reads, so honest parties accept an attacker-controlled public key as if it were A's or B's certified key. Once that happens, the attacker can decrypt protocol messages carrying Na or Nb, replay/re-encrypt them toward the honest peer, and drive sessions to completion. That is exactly why all four secrecy queries fail and why ProVerif also finds endA*/endB* events without matching begin* events.",
+    "patch_suggestion": "Make key registration reject the honest identities A and B, so the attacker cannot overwrite or add alternative certified keys for them. A minimal local patch is to change processK to only register non-honest names, for example:\n\nlet processK =\n    in(c, (h: host, k: pkey));\n    if h = A || h = B then 0 else insert keys(h,k).\n\nThis keeps the initial trusted bindings inserted at startup for A and B, and prevents the server from signing attacker keys as if they belonged to A or B.",
+    "notes": "The provided counterexamples are driven by the open key-registration process. Separately, the initiator decrypts message 6 with skA and the responder checks message 7 with skB instead of the role-dependent skxA/skxB; that looks suspicious, but it is not needed for the attacks shown in the trace."
+  }
+}

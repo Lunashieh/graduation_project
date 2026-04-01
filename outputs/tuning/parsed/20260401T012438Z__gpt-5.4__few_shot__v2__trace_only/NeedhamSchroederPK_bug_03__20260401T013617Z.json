@@ -1,0 +1,25 @@
+{
+  "provider": "openai",
+  "sample_id": "NeedhamSchroederPK_bug_03",
+  "protocol": "NeedhamSchroederPK",
+  "bug_id": "bug_03",
+  "model": "gpt-5.4",
+  "timestamp": "20260401T013617Z",
+  "usage": {
+    "input_tokens": 11806,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 2742,
+    "output_tokens_details": {
+      "reasoning_tokens": 2281
+    },
+    "total_tokens": 14548
+  },
+  "result": {
+    "diagram_code": "sequenceDiagram\nparticipant Attacker\nparticipant ResponderB\nparticipant Server\nAttacker->>ResponderB: start responder with xB = B\nAttacker->>ResponderB: encrypt((a3, B), pkB)\nResponderB->>Server: (B, B)\nServer-->>ResponderB: sign((pkB, B), skS)\nResponderB-->>Attacker: encrypt((a3, Nb, B), pkB)\nNote over ResponderB: message 7 is checked against NY = a3\nAttacker->>ResponderB: encrypt(a3, pkB)\nNote over ResponderB: endBparam/endBfull executed\nResponderB-->>Attacker: sencrypt(secretBNa, a3)\nAttacker->>Attacker: sdecrypt(..., a3) = secretBNa",
+    "explanation": "The trace shows that the responder can be completed by the attacker without a matching initiator run. The attacker starts the responder as B, chooses the first nonce a3 itself, obtains B's certified public key from the server, and then sends back encrypt(a3, pkB) as message 7. In the buggy responder code, message 7 is accepted when it decrypts to NY, the nonce from message 3, instead of the responder-generated nonce Nb. As a result, endBparam/endBfull are reached spuriously, and the responder outputs sencrypt(secretBNa, a3), which the attacker decrypts because it already knows a3.",
+    "patch_suggestion": "In the responder, check message 7 against the responder's fresh nonce Nb, not NY. A minimal code change is to replace `if nonce_to_bitstring(NY) = decrypt(m3, skB) then` with `if nonce_to_bitstring(Nb) = decrypt(m3, skxB) then` so the responder only accepts a return of its own challenge.",
+    "notes": "The provided attack trace is for xB = B. It directly supports the NY-versus-Nb bug. The trace does not separately demonstrate whether the fixed use of `skB` instead of `skxB` causes an additional independent failure."
+  }
+}
